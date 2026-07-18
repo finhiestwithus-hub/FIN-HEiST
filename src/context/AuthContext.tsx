@@ -121,18 +121,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (pass !== adminPass && pass !== 'AdminPassword2026@' && pass !== 'YourSecureAdminPassword123@') {
         return { error: '⚠️ Invalid Admin Password. Please check NEXT_PUBLIC_ADMIN_PASSWORD inside .env.local.' };
       }
-      const adminProfile: UserProfile = {
-        id: 'admin-auth-id-001',
-        full_name: 'CA Finalist Admin Team',
-        phone: '+91 98112 00000',
-        email: email.trim(),
-        role: 'admin'
-      };
-      localStorage.setItem('finheist_demo_user', JSON.stringify(adminProfile));
-      setUser({ id: adminProfile.id, email: adminProfile.email });
-      setProfile(adminProfile);
-      setIsAuthModalOpen(false);
-      return {};
+      
+      if (isSupabaseConfigured()) {
+        // Attempt to sign in Admin to Live Supabase
+        let { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
+        
+        // If the admin account doesn't exist in Supabase yet, auto-provision it securely
+        if (error && (error.message.includes('Invalid login credentials') || error.message.includes('not found'))) {
+          const res = await supabase.auth.signUp({
+            email,
+            password: pass,
+            options: { data: { full_name: 'CA Finalist Admin Team', role: 'admin' } }
+          });
+          data = res.data;
+          error = res.error;
+        }
+
+        if (error) return { error: error.message };
+        
+        if (data?.user) {
+          setUser(data.user);
+          await fetchProfile(data.user.id, data.user.email!);
+          setIsAuthModalOpen(false);
+        }
+        return {};
+      } else {
+        // Local Demo Admin
+        const adminProfile: UserProfile = {
+          id: 'admin-auth-id-001',
+          full_name: 'CA Finalist Admin Team',
+          phone: '+91 98112 00000',
+          email: email.trim(),
+          role: 'admin'
+        };
+        localStorage.setItem('finheist_demo_user', JSON.stringify(adminProfile));
+        setUser({ id: adminProfile.id, email: adminProfile.email });
+        setProfile(adminProfile);
+        setIsAuthModalOpen(false);
+        return {};
+      }
     }
 
     // 2. Normal Client Login
