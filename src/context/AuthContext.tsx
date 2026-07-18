@@ -153,7 +153,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             password: pass,
             options: { data: { full_name: 'CA Finalist Admin Team', role: 'admin' } }
           });
-          data = res.data;
+          data = res.data as any;
           error = res.error;
         }
 
