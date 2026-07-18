@@ -17,12 +17,14 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthModalOpen: boolean;
   setIsAuthModalOpen: (open: boolean) => void;
-  authModalMode: 'login' | 'signup';
-  setAuthModalMode: (mode: 'login' | 'signup') => void;
+  authModalMode: 'login' | 'signup' | 'forgot-password' | 'update-password';
+  setAuthModalMode: (mode: 'login' | 'signup' | 'forgot-password' | 'update-password') => void;
   isAdminModalOpen: boolean;
   setIsAdminModalOpen: (open: boolean) => void;
   signIn: (email: string, pass: string) => Promise<{ error?: string }>;
   signUp: (email: string, pass: string, fullName: string, phone: string, role?: 'user' | 'admin') => Promise<{ error?: string }>;
+  resetPassword: (email: string) => Promise<{ error?: string }>;
+  updatePassword: (password: string) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
 }
 
@@ -33,14 +35,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [authModalMode, setAuthModalMode] = useState<'login' | 'signup'>('login');
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'signup' | 'forgot-password' | 'update-password'>('login');
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
 
   useEffect(() => {
-    // Check initial auth state
-    const initAuth = async () => {
+    let authListener: any = null;
+
+    const setupAuth = async () => {
       if (!isSupabaseConfigured()) {
-        // Fallback demo state when Supabase env keys are not yet provided by client
         const savedDemo = localStorage.getItem('finheist_demo_user');
         if (savedDemo) {
           try {
@@ -55,6 +57,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
+      // Check URL for our custom recovery query parameter
+      if (typeof window !== 'undefined') {
+        const hash = window.location.hash;
+        const search = window.location.search;
+        if (hash.includes('type=recovery') || search.includes('mode=recovery')) {
+          setAuthModalMode('update-password');
+          setIsAuthModalOpen(true);
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      }
+
+      // 1. MUST subscribe to onAuthStateChange BEFORE calling getSession()
+      // so we don't miss the PASSWORD_RECOVERY event!
+      const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'PASSWORD_RECOVERY') {
+          setAuthModalMode('update-password');
+          setIsAuthModalOpen(true);
+        }
+
+        if (session?.user) {
+          setUser(session.user);
+          await fetchProfile(session.user.id, session.user.email!);
+        } else {
+          setUser(null);
+          setProfile(null);
+        }
+        setIsLoading(false);
+      });
+      authListener = data;
+
+      // 2. Now safe to get session
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
@@ -68,24 +101,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    initAuth();
+    setupAuth();
 
-    if (isSupabaseConfigured()) {
-      const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if (session?.user) {
-          setUser(session.user);
-          await fetchProfile(session.user.id, session.user.email!);
-        } else {
-          setUser(null);
-          setProfile(null);
-        }
-        setIsLoading(false);
-      });
-
-      return () => {
-        authListener.subscription.unsubscribe();
-      };
-    }
+    return () => {
+      if (authListener) authListener.subscription.unsubscribe();
+    };
   }, []);
 
   const fetchProfile = async (userId: string, email: string) => {
@@ -246,6 +266,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return {};
   };
 
+  const resetPassword = async (email: string) => {
+    if (!isSupabaseConfigured()) {
+      return { error: '⚠️ Demo mode: Password reset is not available without live database configuration.' };
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}?mode=recovery`,
+    });
+    if (error) {
+      return { error: error.message };
+    }
+    return {};
+  };
+
+  const updatePassword = async (password: string) => {
+    if (!isSupabaseConfigured()) return { error: 'Demo mode' };
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) return { error: error.message };
+    return {};
+  };
+
   const signOut = async () => {
     if (!isSupabaseConfigured()) {
       localStorage.removeItem('finheist_demo_user');
@@ -275,6 +315,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsAdminModalOpen,
         signIn,
         signUp,
+        resetPassword,
+        updatePassword,
         signOut
       }}
     >

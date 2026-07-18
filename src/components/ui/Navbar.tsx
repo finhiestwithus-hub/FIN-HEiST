@@ -209,15 +209,16 @@ export default function Navbar({ onOpenModal }: NavbarProps) {
               )}
 
               {user ? (
-                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-100 border border-slate-200">
-                  <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
+                <div className="flex flex-col gap-2 p-3 rounded-xl bg-slate-50 border border-slate-200">
+                  <div className="flex items-center gap-2 mb-2">
                     <User className="w-4 h-4 text-amber-600" />
-                    <span>Logged in as: {profile?.full_name || user.email}</span>
+                    <span className="font-bold text-slate-800 text-sm truncate">{profile?.full_name || 'Logged In'}</span>
                   </div>
                   <button
                     onClick={() => { signOut(); setMobileMenuOpen(false); }}
-                    className="px-3 py-1.5 rounded-lg bg-red-100 text-red-700 font-bold text-xs"
+                    className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 font-bold text-xs border border-red-200 transition-colors"
                   >
+                    <LogOut className="w-4 h-4" />
                     Sign Out
                   </button>
                 </div>

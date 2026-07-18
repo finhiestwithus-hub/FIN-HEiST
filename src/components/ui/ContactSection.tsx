@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Send, Clock, MessageCircle, CheckCircle2, Phone, Mail, MapPin, Sparkles } from 'lucide-react';
+import { Send, Clock, MessageCircle, CheckCircle2, Phone, Mail, MapPin, Sparkles, ArrowRight } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { COMPANY_INFO } from '../../data/mockData';
 import confetti from 'canvas-confetti';
 
@@ -10,10 +12,11 @@ interface ContactSectionProps {
 }
 
 export default function ContactSection({ onOpenModal }: ContactSectionProps) {
+  const { user, setIsAuthModalOpen, setAuthModalMode } = useAuth();
   const [formData, setFormData] = useState({
-    fullName: '',
+    fullName: user?.user_metadata?.full_name || '',
     phone: '',
-    email: '',
+    email: user?.email || '',
     city: '',
     clientType: 'Business Owner',
     serviceRequired: 'Income Tax Return & Advisory',
@@ -56,8 +59,39 @@ export default function ContactSection({ onOpenModal }: ContactSectionProps) {
       return;
     }
 
+    // Gate check: Must be logged in to submit a consultation booking
+    if (!user) {
+      setErrorMessage('🔒 Client Account Required: Please Sign In or Create a Free Account to submit this form.');
+      setTimeout(() => {
+        setAuthModalMode('login');
+        setIsAuthModalOpen(true);
+      }, 1500);
+      return;
+    }
+
     setStatus('submitting');
-    setTimeout(() => {
+    
+    // Save to Supabase
+    const submitToDB = async () => {
+      if (isSupabaseConfigured()) {
+        try {
+          await supabase.from('enquiries').insert([{
+            user_id: user.id,
+            client_name: formData.fullName,
+            client_phone: formData.phone,
+            client_email: formData.email,
+            client_category: formData.clientType,
+            service_category: formData.serviceRequired,
+            preferred_time: 'As soon as possible',
+            message_notes: `City: ${formData.city}\nMessage: ${formData.message}`,
+            form_source: 'Contact Page Form',
+            status: 'New Inquiry'
+          }]);
+        } catch (err) {
+          console.error('Supabase error:', err);
+        }
+      }
+      
       setStatus('success');
       confetti({
         particleCount: 100,
@@ -66,17 +100,15 @@ export default function ContactSection({ onOpenModal }: ContactSectionProps) {
       });
       setTimeout(() => {
         setStatus('idle');
-        setFormData({
-          fullName: '',
-          phone: '',
-          email: '',
+        setFormData(prev => ({
+          ...prev,
           city: '',
-          clientType: 'Business Owner',
-          serviceRequired: 'Income Tax Return & Advisory',
           message: ''
-        });
+        }));
       }, 4000);
-    }, 1200);
+    };
+
+    submitToDB();
   };
 
   return (

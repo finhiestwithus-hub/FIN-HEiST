@@ -90,7 +90,6 @@ export default function AdminPortalModal() {
       }
       return;
     }
-
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -98,12 +97,11 @@ export default function AdminPortalModal() {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (data && data.length > 0) {
-        setEnquiries(data as ClientEnquiry[]);
-      } else {
-        // If table is newly created and empty, show live demo inquiries right away
-        setEnquiries(DEMO_ENQUIRIES);
+      if (error) {
+        console.error('Fetch error:', error);
       }
+      
+      setEnquiries((data as ClientEnquiry[]) || []);
     } catch (err) {
       console.error(err);
     } finally {
