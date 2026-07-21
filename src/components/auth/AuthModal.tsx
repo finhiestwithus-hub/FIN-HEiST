@@ -96,10 +96,10 @@ export default function AuthModal() {
             </div>
             <div>
               <h3 className="text-xl sm:text-2xl font-extrabold font-poppins text-slate-950 tracking-tight">
-                {authModalMode === 'login' ? 'Client / CA Admin Sign In' : authModalMode === 'forgot-password' ? 'Reset Password' : authModalMode === 'update-password' ? 'Set New Password' : 'Create Client Account'}
+                {authModalMode === 'login' ? 'CA Admin Sign In' : authModalMode === 'forgot-password' ? 'Reset Password' : 'Set New Password'}
               </h3>
               <p className="text-xs text-slate-900/90 font-semibold font-inter mt-0.5">
-                {authModalMode === 'login' ? 'Access your consultation dashboard & CA feed' : authModalMode === 'forgot-password' ? 'Enter your email to receive a reset link' : authModalMode === 'update-password' ? 'Please enter your new secure password' : 'Secure client portal registration'}
+                {authModalMode === 'login' ? 'Access your consultation dashboard & CA feed' : authModalMode === 'forgot-password' ? 'Enter your email to receive a reset link' : 'Please enter your new secure password'}
               </p>
             </div>
           </div>
@@ -111,33 +111,6 @@ export default function AuthModal() {
           </button>
         </div>
 
-        {/* Tabs Mode Switcher (Hide in recovery/reset modes) */}
-        {authModalMode !== 'update-password' && (
-          <div className="flex border-b border-slate-200 bg-slate-100/60 p-1.5 gap-1.5 mx-7 mt-6 rounded-2xl">
-            <button
-              type="button"
-              onClick={() => { setAuthModalMode('login'); setErrorMsg(''); setSuccessMsg(''); }}
-              className={`flex-1 py-2.5 rounded-xl font-poppins font-extrabold text-xs transition-all ${
-                authModalMode === 'login' || authModalMode === 'forgot-password'
-                  ? 'bg-white text-slate-950 shadow-sm border border-slate-200'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Sign In to Account
-            </button>
-            <button
-              type="button"
-              onClick={() => { setAuthModalMode('signup'); setErrorMsg(''); setSuccessMsg(''); }}
-              className={`flex-1 py-2.5 rounded-xl font-poppins font-extrabold text-xs transition-all ${
-                authModalMode === 'signup'
-                  ? 'bg-white text-slate-950 shadow-sm border border-slate-200'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Create New Account
-            </button>
-          </div>
-        )}
 
         {/* Form Body */}
         <div className="p-7">
@@ -156,43 +129,6 @@ export default function AuthModal() {
               </div>
             )}
 
-            {authModalMode === 'signup' && (
-              <>
-                <div>
-                  <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-700 font-poppins mb-1.5">
-                    Full Name *
-                  </label>
-                  <div className="relative">
-                    <User className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. Rajesh Sharma"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 rounded-2xl bg-white border-2 border-slate-200 text-slate-900 placeholder-slate-400 font-medium text-sm focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 transition-all shadow-2xs"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-700 font-poppins mb-1.5">
-                    Phone / WhatsApp Number *
-                  </label>
-                  <div className="relative">
-                    <Phone className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
-                    <input
-                      type="tel"
-                      required
-                      placeholder="+91 98765 43210"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 rounded-2xl bg-white border-2 border-slate-200 text-slate-900 placeholder-slate-400 font-medium text-sm focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 transition-all shadow-2xs"
-                    />
-                  </div>
-                </div>
-              </>
-            )}
 
             {authModalMode !== 'update-password' && (
               <div>
@@ -281,7 +217,7 @@ export default function AuthModal() {
                   <div className="w-5 h-5 border-2 border-slate-950/30 border-t-slate-950 rounded-full animate-spin" />
                 ) : (
                   <>
-                    <span>{authModalMode === 'login' ? 'Sign In to Account' : authModalMode === 'forgot-password' ? 'Send Reset Link' : authModalMode === 'update-password' ? 'Update Password' : 'Complete Registration'}</span>
+                    <span>{authModalMode === 'login' ? 'Sign In to Account' : authModalMode === 'forgot-password' ? 'Send Reset Link' : 'Update Password'}</span>
                     <ArrowRight className="w-5 h-5 text-slate-950 stroke-[2.5]" />
                   </>
                 )}

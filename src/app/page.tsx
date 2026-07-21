@@ -5,13 +5,11 @@ import Navbar from '@/components/ui/Navbar';
 import Hero from '@/components/ui/Hero';
 import TrustSection from '@/components/ui/TrustSection';
 import ServicesSection from '@/components/ui/ServicesSection';
-import FeaturedServicesShowcase from '@/components/ui/FeaturedServicesShowcase';
 import WhyFinHeist from '@/components/ui/WhyFinHeist';
 import ProcessSection from '@/components/ui/ProcessSection';
 import BankLoanAssistance from '@/components/ui/BankLoanAssistance';
 import AboutSection from '@/components/ui/AboutSection';
 import LeadershipSection from '@/components/ui/LeadershipSection';
-import Testimonials from '@/components/ui/Testimonials';
 import FAQSection from '@/components/ui/FAQSection';
 import ContactSection from '@/components/ui/ContactSection';
 import Footer from '@/components/ui/Footer';
@@ -40,8 +38,7 @@ export default function HomePage() {
       {/* 4. Complete Financial & Compliance Services Portfolio (10 Core Practice Areas) */}
       <ServicesSection onOpenModal={handleOpenModal} />
 
-      {/* 5. Featured Services Showcase (Large Horizontal Cards & Interactive Visual Engines) */}
-      <FeaturedServicesShowcase onOpenModal={handleOpenModal} />
+
 
       {/* 6. Why Fin-Heist Premium Bento Grid */}
       <WhyFinHeist />
@@ -57,9 +54,6 @@ export default function HomePage() {
 
       {/* 10. Luxury Leadership & Team Showcase (Founders & CA Advisory Board) */}
       <LeadershipSection onOpenModal={handleOpenModal} />
-
-      {/* 11. Testimonials Animated Carousel */}
-      <Testimonials />
 
       {/* 12. Interactive FAQ Accordion */}
       <FAQSection />

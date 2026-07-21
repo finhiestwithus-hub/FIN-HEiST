@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase, isSupabaseConfigured } from '../../lib/supabase';
-import { X, Shield, Phone, Mail, CheckCircle2, Clock, Filter, MessageCircle, RefreshCw, AlertCircle, FileText, Search } from 'lucide-react';
+import { X, Shield, Phone, Mail, CheckCircle2, Clock, Filter, MessageCircle, RefreshCw, AlertCircle, FileText, Search, Plus, Trash2, Newspaper, Pencil, Check } from 'lucide-react';
+import { NewsItem } from '../../types';
 
 export interface ClientEnquiry {
   id: string;
@@ -68,11 +69,23 @@ export default function AdminPortalModal() {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
+  const [activeTab, setActiveTab] = useState<'enquiries' | 'news'>('enquiries');
+  const [news, setNews] = useState<NewsItem[]>([]);
+  const [newHeadline, setNewHeadline] = useState('');
+  const [newLink, setNewLink] = useState('');
+  const [loadingNews, setLoadingNews] = useState(false);
+  const [isAddingNews, setIsAddingNews] = useState(false);
+  
+  const [editingNewsId, setEditingNewsId] = useState<string | null>(null);
+  const [editHeadline, setEditHeadline] = useState('');
+  const [editLink, setEditLink] = useState('');
+
   useEffect(() => {
     if (isAdminModalOpen) {
-      fetchEnquiries();
+      if (activeTab === 'enquiries') fetchEnquiries();
+      if (activeTab === 'news') fetchNews();
     }
-  }, [isAdminModalOpen]);
+  }, [isAdminModalOpen, activeTab]);
 
   const fetchEnquiries = async () => {
     if (!isSupabaseConfigured()) {
@@ -130,6 +143,94 @@ export default function AdminPortalModal() {
     }
   };
 
+  const fetchNews = async () => {
+    if (!isSupabaseConfigured()) return;
+    setLoadingNews(true);
+    try {
+      const { data, error } = await supabase
+        .from('news_ticker')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (!error) setNews(data || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingNews(false);
+    }
+  };
+
+  const addNews = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newHeadline.trim() || !isSupabaseConfigured() || isAddingNews) return;
+    
+    setIsAddingNews(true);
+    try {
+      const { data, error } = await supabase
+        .from('news_ticker')
+        .insert([{ headline: newHeadline.trim(), link: newLink.trim() || null }])
+        .select();
+      if (!error && data) {
+        setNews([data[0], ...news]);
+        setNewHeadline('');
+        setNewLink('');
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsAddingNews(false);
+    }
+  };
+
+  const startEditNews = (item: NewsItem) => {
+    setEditingNewsId(item.id);
+    setEditHeadline(item.headline);
+    setEditLink(item.link || '');
+  };
+
+  const saveEditNews = async () => {
+    if (!editingNewsId || !editHeadline.trim() || !isSupabaseConfigured()) return;
+    
+    // Optimistic Update
+    const previousNews = [...news];
+    const idToEdit = editingNewsId;
+    setNews(news.map(n => n.id === editingNewsId ? { ...n, headline: editHeadline.trim(), link: editLink.trim() || null } : n));
+    setEditingNewsId(null);
+
+    try {
+      const { error } = await supabase
+        .from('news_ticker')
+        .update({ headline: editHeadline.trim(), link: editLink.trim() || null })
+        .eq('id', idToEdit);
+      
+      if (error) {
+        console.error(error);
+        setNews(previousNews); // revert on error
+      }
+    } catch (err) {
+      console.error(err);
+      setNews(previousNews); // revert on error
+    }
+  };
+
+  const deleteNews = async (id: string) => {
+    if (!isSupabaseConfigured()) return;
+    
+    // Optimistic Delete
+    const previousNews = [...news];
+    setNews(news.filter(n => n.id !== id));
+
+    try {
+      const { error } = await supabase.from('news_ticker').delete().eq('id', id);
+      if (error) {
+        console.error(error);
+        setNews(previousNews); // revert on error
+      }
+    } catch (err) {
+      console.error(err);
+      setNews(previousNews); // revert on error
+    }
+  };
+
   if (!isAdminModalOpen) return null;
 
   const filteredEnquiries = enquiries.filter(item => {
@@ -182,8 +283,34 @@ export default function AdminPortalModal() {
           </div>
         </div>
 
-        {/* Filter & Search Bar */}
-        <div className="p-5 sm:px-8 border-b border-slate-200 bg-slate-100/70 flex flex-wrap items-center justify-between gap-4 shrink-0">
+        {/* Tabs Switcher */}
+        <div className="flex border-b border-slate-200 bg-slate-100/40 p-2 gap-2 shrink-0">
+          <button
+            onClick={() => setActiveTab('enquiries')}
+            className={`flex-1 py-3 flex items-center justify-center gap-2 rounded-xl font-poppins font-extrabold text-xs sm:text-sm transition-all ${
+              activeTab === 'enquiries'
+                ? 'bg-white text-slate-950 shadow-sm border border-slate-200'
+                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/50'
+            }`}
+          >
+            <FileText className="w-4 h-4" /> Client Enquiries
+          </button>
+          <button
+            onClick={() => setActiveTab('news')}
+            className={`flex-1 py-3 flex items-center justify-center gap-2 rounded-xl font-poppins font-extrabold text-xs sm:text-sm transition-all ${
+              activeTab === 'news'
+                ? 'bg-white text-slate-950 shadow-sm border border-slate-200'
+                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/50'
+            }`}
+          >
+            <Newspaper className="w-4 h-4" /> Manage News Ticker
+          </button>
+        </div>
+
+        {activeTab === 'enquiries' && (
+          <>
+            {/* Filter & Search Bar */}
+            <div className="p-5 sm:px-8 border-b border-slate-200 bg-slate-100/70 flex flex-wrap items-center justify-between gap-4 shrink-0">
           
           <div className="flex items-center flex-wrap gap-2">
             <span className="text-xs font-bold uppercase text-slate-500 font-poppins mr-2">Filter Category:</span>
@@ -318,9 +445,131 @@ export default function AdminPortalModal() {
             </div>
           )}
         </div>
+        </>
+        )}
 
-        {/* Footer */}
-        <div className="px-7 py-4 bg-slate-100 border-t border-slate-200 flex items-center justify-between text-xs font-bold text-slate-600 font-inter shrink-0">
+        {activeTab === 'news' && (
+          <div className="p-6 sm:p-8 overflow-y-auto flex-1 bg-white space-y-6">
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm">
+              <h4 className="text-sm font-extrabold font-poppins text-slate-900 mb-4 flex items-center gap-2">
+                <Plus className="w-4 h-4 text-amber-600" /> Add New Headline
+              </h4>
+              <form onSubmit={addNews} className="space-y-4">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex-1 space-y-1.5">
+                    <label className="text-xs font-bold text-slate-500 uppercase">Headline Text *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Breaking: GST Filing Deadline Extended to August 31st"
+                      value={newHeadline}
+                      onChange={(e) => setNewHeadline(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-medium focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                    />
+                  </div>
+                  <div className="flex-1 space-y-1.5">
+                    <label className="text-xs font-bold text-slate-500 uppercase">Redirect Link (Optional)</label>
+                    <input
+                      type="url"
+                      placeholder="e.g. https://incometaxindia.gov.in"
+                      value={newLink}
+                      onChange={(e) => setNewLink(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-medium focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                    />
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  disabled={!newHeadline.trim() || isAddingNews}
+                  className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-amber-400 font-bold text-sm rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2 min-w-[140px]"
+                >
+                  {isAddingNews ? (
+                    <><RefreshCw className="w-4 h-4 animate-spin" /> Adding...</>
+                  ) : (
+                    'Add to Ticker'
+                  )}
+                </button>
+              </form>
+            </div>
+
+            <div className="space-y-3">
+              <h4 className="text-sm font-extrabold font-poppins text-slate-900 flex items-center justify-between">
+                <span>Active Headlines ({news.length})</span>
+                {loadingNews && <RefreshCw className="w-4 h-4 animate-spin text-slate-400" />}
+              </h4>
+              
+              {!isSupabaseConfigured() && (
+                <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium">
+                  Connect Supabase to manage the live news ticker.
+                </div>
+              )}
+
+              {news.map((item) => (
+                <div key={item.id} className="p-4 rounded-xl border border-slate-200 bg-white shadow-sm flex items-center justify-between gap-4 group hover:border-amber-300 transition-colors">
+                  {editingNewsId === item.id ? (
+                    <div className="flex-1 space-y-2 w-full">
+                      <input
+                        type="text"
+                        value={editHeadline}
+                        onChange={(e) => setEditHeadline(e.target.value)}
+                        className="w-full px-3 py-1.5 rounded-lg border border-amber-300 text-sm font-medium focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                      />
+                      <input
+                        type="url"
+                        placeholder="Link (optional)"
+                        value={editLink}
+                        onChange={(e) => setEditLink(e.target.value)}
+                        className="w-full px-3 py-1.5 rounded-lg border border-amber-300 text-xs font-medium focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                      />
+                      <div className="flex gap-2 justify-end">
+                        <button onClick={() => setEditingNewsId(null)} className="px-3 py-1 text-xs font-bold text-slate-500 hover:text-slate-800">Cancel</button>
+                        <button onClick={saveEditNews} className="px-3 py-1 bg-amber-500 text-slate-950 text-xs font-bold rounded-lg hover:bg-amber-400 flex items-center gap-1">
+                          <Check className="w-3 h-3" /> Save
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex-1">
+                        <p className="text-sm font-bold text-slate-900">{item.headline}</p>
+                        {item.link && (
+                          <a href={item.link} target="_blank" rel="noreferrer" className="text-xs text-amber-600 hover:underline mt-1 block">
+                            {item.link}
+                          </a>
+                        )}
+                      </div>
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                        <button
+                          onClick={() => startEditNews(item)}
+                          className="p-2 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"
+                          title="Edit Headline"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => deleteNews(item.id)}
+                          className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                          title="Delete Headline"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))}
+              
+              {news.length === 0 && isSupabaseConfigured() && !loadingNews && (
+                <div className="text-center py-8 text-slate-500 text-sm font-medium">
+                  No active news headlines. Add one above!
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Modal Footer */}
+        <div className="px-6 sm:px-8 py-4 bg-slate-100 border-t border-slate-200 flex items-center justify-between text-xs font-bold text-slate-500 font-inter shrink-0">
           <span>Total Records Shown: <strong className="text-slate-900">{filteredEnquiries.length}</strong></span>
           <span className="text-emerald-700 flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />

@@ -95,3 +95,10 @@ export interface ContactFormData {
   serviceRequired: string;
   message: string;
 }
+
+export interface NewsItem {
+  id: string;
+  headline: string;
+  link: string | null;
+  created_at?: string;
+}

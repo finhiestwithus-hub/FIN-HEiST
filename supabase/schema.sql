@@ -69,10 +69,10 @@ CREATE POLICY "Users can view own submitted enquiries"
 ON public.enquiries FOR SELECT 
 USING (auth.uid() = user_id);
 
--- 2. Normal Users can insert inquiries linked to their user_id
-CREATE POLICY "Authenticated users can submit new enquiries" 
+-- 2. Anyone can insert inquiries
+CREATE POLICY "Anyone can submit new enquiries" 
 ON public.enquiries FOR INSERT 
-WITH CHECK (auth.uid() = user_id OR auth.role() = 'authenticated');
+WITH CHECK (true);
 
 -- 3. CA Admins can VIEW ALL client enquiries across all categories
 CREATE POLICY "Admins can view all enquiries" 
@@ -122,3 +122,38 @@ CREATE TRIGGER on_auth_user_created
 -- Note: After creating an account with email 'admin@fin-heist.com' via the Signup UI,
 -- you can run this SQL query to promote that account to 'admin' role instantly:
 -- UPDATE public.profiles SET role = 'admin' WHERE email = 'admin@fin-heist.com';
+-- ==============================================================================
+-- 6. NEWS TICKER TABLE (Managed by Admins)
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS public.news_ticker (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    headline TEXT NOT NULL,
+    link TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Enable RLS
+ALTER TABLE public.news_ticker ENABLE ROW LEVEL SECURITY;
+
+-- Policies for news_ticker
+-- Anyone can read news
+DROP POLICY IF EXISTS "Anyone can view news" ON public.news_ticker;
+CREATE POLICY "Anyone can view news" 
+ON public.news_ticker FOR SELECT 
+USING (true);
+
+-- Only authenticated users (Admins) can insert/update/delete news
+DROP POLICY IF EXISTS "Admins can insert news" ON public.news_ticker;
+CREATE POLICY "Admins can insert news" 
+ON public.news_ticker FOR INSERT 
+WITH CHECK (auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Admins can update news" ON public.news_ticker;
+CREATE POLICY "Admins can update news" 
+ON public.news_ticker FOR UPDATE 
+USING (auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Admins can delete news" ON public.news_ticker;
+CREATE POLICY "Admins can delete news" 
+ON public.news_ticker FOR DELETE 
+USING (auth.role() = 'authenticated');
