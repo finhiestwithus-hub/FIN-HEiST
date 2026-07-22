@@ -156,7 +156,7 @@ export default function NetWorthCalculator() {
                         ))}
                       </Pie>
                       <Tooltip 
-                        formatter={(value: number) => `₹${formatINR(value)}`}
+                        formatter={(value: any) => `₹${formatINR(value)}`}
                         contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                       />
                     </PieChart>
