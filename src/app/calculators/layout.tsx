@@ -26,7 +26,7 @@ export default function CalculatorsLayout({
       </div>
 
       {/* 3. Footer */}
-      <Footer />
+      <Footer onOpenModal={handleOpenModal} />
     </main>
   );
 }
