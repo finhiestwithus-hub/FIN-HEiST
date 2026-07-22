@@ -194,7 +194,7 @@ export default function EMICalculator() {
                         ))}
                       </Pie>
                       <Tooltip 
-                        formatter={(value: number) => `₹${formatINR(Math.round(value))}`}
+                        formatter={(value: any) => `₹${formatINR(Math.round(value))}`}
                         contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                       />
                     </PieChart>
