@@ -71,7 +71,7 @@ export default function Navbar({ onOpenModal }: NavbarProps) {
  return (
  <header className="fixed top-0 left-0 right-0 z-50 font-inter">
  {/* Top Contact Bar */}
- <div className="bg-[#07080c] text-slate-300 px-4 sm:px-8 lg:px-12 xl:px-16 py-2.5 text-xs border-b border-amber-500/30 flex items-center justify-between shadow-inner">
+ <div className="hidden sm:flex bg-[#07080c] text-slate-300 px-4 sm:px-8 lg:px-12 xl:px-16 py-2.5 text-xs border-b border-amber-500/30 items-center justify-between shadow-inner">
  <div className="flex items-center flex-wrap gap-4 sm:gap-6">
  <a href={`tel:${COMPANY_INFO.phone}`} className="flex items-center gap-1.5 text-slate-200 hover:text-amber-400 transition-colors font-medium">
  <PhoneCall className="w-3.5 h-3.5 text-amber-400 animate-pulse" />

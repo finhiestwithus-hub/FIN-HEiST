@@ -35,12 +35,12 @@ export default function NewsTicker() {
  <div className="w-full bg-slate-950/95 backdrop-blur-xl text-white overflow-hidden border-y border-amber-500/30 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.5)] relative z-50 flex items-stretch h-14 sm:h-16">
  
  {/* Premium Badge */}
- <div className="px-6 sm:px-10 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 text-slate-950 font-black text-sm sm:text-[15px] uppercase tracking-[0.2em] shrink-0 z-10 shadow-[8px_0_20px_-5px_rgba(245,158,11,0.3)] relative flex items-center justify-center border-r border-amber-400/50">
+ <div className="hidden sm:flex px-10 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 text-slate-950 font-black text-[15px] uppercase tracking-[0.2em] shrink-0 z-10 shadow-[8px_0_20px_-5px_rgba(245,158,11,0.3)] relative items-center justify-center border-r border-amber-400/50">
  <span className="flex items-center gap-2.5">
- <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-slate-950" />
+ <Sparkles className="w-5 h-5 text-slate-950" />
  Daily News
  </span>
- <div className="absolute top-0 right-[-16px] w-0 h-0 border-t-[28px] sm:border-t-[32px] border-t-transparent border-l-[16px] border-l-amber-600 border-b-[28px] sm:border-b-[32px] border-b-transparent hidden sm:block"></div>
+ <div className="absolute top-0 right-[-16px] w-0 h-0 border-t-[32px] border-t-transparent border-l-[16px] border-l-amber-600 border-b-[32px] border-b-transparent hidden sm:block"></div>
  </div>
  
  {/* Scrolling Marquee */}
@@ -73,17 +73,17 @@ export default function NewsTicker() {
  {baseItems.map((item, i) => (
  <div key={`${item.id}-${i}`} className="flex items-center shrink-0">
  {item.link ? (
- <a href={item.link} target="_blank" rel="noreferrer" className="text-[17px] sm:text-[19px] font-semibold font-montserrat text-slate-100 hover:text-amber-400 transition-all duration-300 hover:scale-[1.01] flex items-center gap-4 group">
- <span className="flex h-2.5 w-2.5 relative">
+ <a href={item.link} target="_blank" rel="noreferrer" className="text-[14px] sm:text-[19px] font-semibold font-montserrat text-slate-100 hover:text-amber-400 transition-all duration-300 hover:scale-[1.01] flex items-center gap-3 sm:gap-4 group">
+ <span className="flex h-2 w-2 sm:h-2.5 sm:w-2.5 relative shrink-0">
  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
- <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.8)]"></span>
+ <span className="relative inline-flex rounded-full h-2 w-2 sm:h-2.5 sm:w-2.5 bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.8)]"></span>
  </span>
  {item.headline}
- <ArrowUpRight className="w-5 h-5 text-slate-500 group-hover:text-amber-400 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+ <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5 shrink-0 text-slate-500 group-hover:text-amber-400 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
  </a>
  ) : (
- <span className="text-[17px] sm:text-[19px] font-semibold font-montserrat text-slate-200 flex items-center gap-4">
- <span className="w-2.5 h-2.5 rounded-full bg-amber-500/50" />
+ <span className="text-[14px] sm:text-[19px] font-semibold font-montserrat text-slate-200 flex items-center gap-3 sm:gap-4">
+ <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 shrink-0 rounded-full bg-amber-500/50" />
  {item.headline}
  </span>
  )}

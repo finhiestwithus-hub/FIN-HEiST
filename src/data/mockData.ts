@@ -57,7 +57,7 @@ export const CORE_SERVICES: ServiceItem[] = [
     category: 'core',
     gradient: 'from-violet-600/20 via-purple-600/20 to-pink-500/20',
     subServices: [
-      'End-to-End Bookkeeping on Tally Prime / QuickBooks / Zoho',
+      'End-to-End Bookkeeping on Tally Accounting',
       'Ledger Scrutiny & General Ledger Maintenance',
       'Periodic Bank & Vendor Ledger Reconciliation',
       'Accounts Finalization Support & Audit Readiness',
@@ -141,7 +141,8 @@ export const CORE_SERVICES: ServiceItem[] = [
       '12A, 80G, CSR-1 & NGO Darpan Certifications',
       'Trademark Registration, Brand Logo & IP Protection Support',
       'FSSAI Food License, Trade License & Professional Tax Setup',
-      'EPF & ESIC Employer Registration & Monthly Return Compliance'
+      'EPF & ESIC Employer Registration & Monthly Return Compliance',
+      'DSC, DIN, and more'
     ]
   },
   {
@@ -160,7 +161,8 @@ export const CORE_SERVICES: ServiceItem[] = [
       'Debtors, Creditors & Stock Valuation Certificates',
       'Fixed Asset & Capital Investment Verification Certificates',
       'Bank Finance & Working Capital Assessment Certificates',
-      'Attestation of Statutory Financial Documents & Projections'
+      'Attestation of Statutory Financial Documents & Projections',
+      'Other Statutory & Financial Certificates as Required'
     ]
   },
   {
@@ -361,26 +363,6 @@ export const BENTO_GRID_ITEMS: BentoItem[] = [
     iconName: 'Headphones',
     colSpan: 1,
     rowSpan: 1,
-    badge: 'Direct WhatsApp Access'
-  },
-  {
-    id: 'affordable-packages',
-    title: 'Custom & Affordable Packages',
-    description: 'Flexible monthly, quarterly, and annual subscription packages designed specifically for early-stage startups and growing MSMEs.',
-    iconName: 'PackageCheck',
-    colSpan: 1,
-    rowSpan: 1,
-    badge: 'MSME Friendly'
-  },
-  {
-    id: 'business-growth',
-    title: 'Strategic Business Growth Support',
-    description: 'Beyond compliance, we provide actionable financial analytics, working capital optimization, and corporate governance insights to help you scale.',
-    iconName: 'TrendingUp',
-    colSpan: 2,
-    rowSpan: 1,
-    badge: 'SaaS-Grade Insights',
-    gradient: 'from-blue-600/30 via-cyan-600/20 to-transparent'
   }
 ];
 
@@ -498,7 +480,7 @@ export const TEAM_MEMBERS: TeamMember[] = [
     role: 'Co-Founder & Lead Financial Specialist',
     qualifications: 'CA Finalist | B.Com (Hons.)',
     expertise: ['Income Tax Filings', 'GST Compliance', 'Financial Documentation', 'Project Reports & Bank Loans', 'Regulatory Advisory'],
-    bio: 'Vineet is a dedicated CA Finalist with extensive practical expertise in taxation, GST compliance, accounting, financial reporting, and complex business advisory. He has successfully guided hundreds of individuals, startups, and MSMEs in structuring bank-ready project reports, navigating GST assessments, and optimizing direct tax structures with complete transparency and timely execution.',
+    bio: 'Vineet Choudhary is a CA Finalist with practical experience in taxation, GST, accounting, audit support, financial reporting, and business compliance. He has worked extensively on income tax filings, GST compliance, financial documentation, project reports, bank loan documentation, and regulatory advisory for individuals and MSMEs. His client-focused approach emphasizes practical solutions, transparency, and timely execution.',
     linkedin: 'https://linkedin.com/company/fin-heist',
     email: 'finhiestwithus@gmail.com',
     isAdvisory: false
@@ -510,7 +492,7 @@ export const TEAM_MEMBERS: TeamMember[] = [
     role: 'Co-Founder & Statutory Compliance Lead',
     qualifications: 'CA Finalist | B.Com | M.Com',
     expertise: ['Accounting & Tally', 'Direct & Indirect Taxation', 'Statutory Audit Support', 'Financial Reporting', 'Business Advisory'],
-    bio: 'Anshika brings a robust academic and practical foundation in Commerce and Corporate Finance. As a detail-oriented CA Finalist specializing in statutory compliance, general ledger scrutiny, and advisory services, she ensures that growing enterprises and high-net-worth clients achieve seamless regulatory alignment, audit readiness, and rock-solid internal financial controls.',
+    bio: ' Anshika Sahu is a CA Finalist with a strong academic background in Commerce and Finance. She specializes in accounting, taxation, statutory compliance, financial reporting, and business advisory services. With a detail-oriented approach and commitment to excellence, she assists individuals, startups, and businesses in meeting their financial and regulatory requirements efficiently.',
     linkedin: 'https://linkedin.com/company/fin-heist',
     email: 'finhiestwithus@gmail.com',
     isAdvisory: false
@@ -656,10 +638,145 @@ export const COMPANY_INFO = {
   tagline: 'Tax, GST & Compliance Made Simple',
   phone: '+91 9027661642',
   email: 'finhiestwithus@gmail.com',
-  instagram: '@finhiestwithus',
-  instagramUrl: 'https://instagram.com/finhiestwithus',
+  instagram: '@finheistwithus',
+  instagramUrl: 'https://instagram.com/finheistwithus',
   whatsappNumber: '919027661642',
   address: 'Dehradun, Uttarakhand & Digital Pan-India Operation',
   location: 'Dehradun City & Pan-India',
   hours: 'Monday – Saturday: 9:30 AM to 7:30 PM (IST) | Online Consultation 24/7'
 };
+
+export const UTILITY_CATEGORIES = [
+  {
+    id: 'itr',
+    label: 'Income Tax',
+    iconName: 'FileText',
+    subCalculators: [
+      {
+        id: 'income-tax-calculator',
+        title: 'Income Tax Calculator FY 2025-26',
+        description: 'Calculate income tax under both Old and New Regime. Compares tax liability across regimes and computes rebate u/s 87A.',
+        badge: 'Income Tax Act',
+        href: '/calculators/income-tax',
+        iconName: 'Calculator'
+      },
+      {
+        id: 'hra-calculator',
+        title: 'HRA Exemption Calculator',
+        description: 'Calculate HRA tax exemption as per Rule 279 of IT Rules 2026. Supports multiple employers and job changes.',
+        badge: 'Income Tax Act 2025',
+        href: '/calculators/hra',
+        iconName: 'Home'
+      },
+      {
+        id: 'form-121-utility',
+        title: 'Form No. 121 Generator',
+        description: 'Fill Form No. 121 online — Declaration under section 393(6) for receipt of certain incomes without deduction of tax.',
+        badge: 'Income Tax Act 2025',
+        href: '/calculators/form-121',
+        iconName: 'FileSpreadsheet'
+      }
+    ]
+  },
+  {
+    id: 'gst',
+    label: 'GST',
+    iconName: 'Layers',
+    subCalculators: [
+      {
+        id: 'gst-calculator',
+        title: 'GST Calculator',
+        description: 'Free GST Calculator for all rates. Calculate GST inclusive or exclusive. Splits into CGST+SGST or IGST.',
+        badge: 'GST Act',
+        href: '/calculators/gst',
+        iconName: 'Calculator'
+      },
+      {
+        id: 'gst-product-price-calculator',
+        title: 'GST Product Price & Margin Finder',
+        description: 'Find the right selling price after GST registration. Enter taxable value, add margin % and get selling price & GST.',
+        badge: 'GST Tool',
+        href: '/calculators/gst-price',
+        iconName: 'TrendingUp'
+      },
+      {
+        id: 'gst-rate-finder',
+        title: 'GST Rate Finder Utility',
+        description: 'Quickly find applicable GST rates using HSN or SAC codes. Search by product or service name to identify tax rates.',
+        badge: 'GST Tool',
+        href: '/calculators/gst-rate',
+        iconName: 'Search'
+      },
+      {
+        id: 'gstr3b-converter',
+        title: 'GSTR-3B PDF to Excel Converter',
+        description: 'Extract GSTIN, outward supplies, ITC and exempt inward supplies from GSTR-3B PDFs into a structured Excel workbook.',
+        badge: 'GST Tool',
+        href: '/calculators/gstr3b-excel',
+        iconName: 'FileSpreadsheet'
+      }
+    ]
+  },
+  {
+    id: 'finance',
+    label: 'Finance',
+    iconName: 'TrendingUp',
+    subCalculators: [
+      {
+        id: 'emi-calculator',
+        title: 'Loan EMI Calculator',
+        description: 'Calculate your monthly EMI, total interest payable and full repayment schedule for any loan amount and tenure.',
+        badge: 'Finance Tool',
+        href: '/calculators/emi',
+        iconName: 'Calculator'
+      },
+      {
+        id: 'net-worth-calculator',
+        title: 'Net Worth Calculator',
+        description: 'Calculate your personal or business net worth by entering assets and liabilities. Download detailed statement.',
+        badge: 'Personal Finance',
+        href: '/calculators/net-worth',
+        iconName: 'Briefcase'
+      },
+      {
+        id: 'look-scanned',
+        title: 'Look Scanned Utility',
+        description: 'Make your PDF look scanned with realistic effects — noise, blur, rotation. Runs 100% in your browser.',
+        badge: 'PDF Tool',
+        href: '/calculators/pdf-scan',
+        iconName: 'FileText'
+      }
+    ]
+  },
+  {
+    id: 'tds-tcs',
+    label: 'TDS / TCS',
+    iconName: 'Percent',
+    subCalculators: [
+      {
+        id: 'tds-tcs-rate',
+        title: 'TDS & TCS Rate Calculator',
+        description: 'Find applicable TDS/TCS section under Income Tax Act with old Act cross-reference. All rates & thresholds.',
+        badge: 'Income Tax Act',
+        href: '/calculators/tds-rate',
+        iconName: 'Percent'
+      },
+      {
+        id: 'tds-penalty',
+        title: 'TDS Interest & Penalty Calculator',
+        description: 'Calculate interest on late deduction, late payment & late filing fees under Income Tax Act sections 201(1A) and 234E.',
+        badge: 'Income Tax Act',
+        href: '/calculators/tds-penalty',
+        iconName: 'AlertTriangle'
+      },
+      {
+        id: 'tds-challan-converter',
+        title: 'Challan to Excel Converter',
+        description: 'Extract PAN, TAN, Name, BSR Code, Challan No from ITNS 280 and ITNS 281 challans to Excel.',
+        badge: 'Tool',
+        href: '/calculators/challan-excel',
+        iconName: 'FileSpreadsheet'
+      }
+    ]
+  }
+];

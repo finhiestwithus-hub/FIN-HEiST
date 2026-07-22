@@ -331,6 +331,9 @@ export default function FloatingWidgets({ isModalOpen, setIsModalOpen, selectedS
  <option value="TDS Return & Compliance">TDS Return & Compliance</option>
  <option value="CA Certificate & Attestation">CA Certificate & Attestation</option>
  <option value="General Financial Consultation">General Financial Consultation</option>
+ <option value="Advance Tax Advisory">Advance Tax Advisory</option>
+ <option value="Business Registration">Business Registration</option>
+ <option value="Other Services Required">Other Services Required</option>
  </select>
  </div>
  </div>

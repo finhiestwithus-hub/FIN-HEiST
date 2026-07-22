@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { TRUST_STATS } from '../../data/mockData';
 import { motion, useScroll, useTransform, useMotionValueEvent, MotionValue } from 'framer-motion';
 
@@ -36,8 +36,13 @@ function AnimatedNumber({ mv }: { mv: MotionValue<number> }) {
  return <span ref={ref}>0</span>;
 }
 
-export default function TrustSection() {
+export default function TrustSectionNew() {
  const sectionRef = useRef<HTMLElement>(null);
+ const [isMounted, setIsMounted] = useState(false);
+
+ useEffect(() => {
+   setIsMounted(true);
+ }, []);
 
  // Scroll Tracking for interactive scrubbing
  const { scrollYProgress } = useScroll({
@@ -52,12 +57,16 @@ export default function TrustSection() {
  const opacity4 = useTransform(scrollYProgress, [0.79, 1], [0, 1], { clamp: true });
  const opacities = [opacity1, opacity2, opacity3, opacity4];
 
- // Arrow & Text appearances (Each fades out and retracts before the next one appears)
- const contentOp1 = useTransform(scrollYProgress, [0.13, 0.26, 0.30, 0.39], [0, 1, 1, 0], { clamp: true });
- const contentOp2 = useTransform(scrollYProgress, [0.39, 0.52, 0.56, 0.65], [0, 1, 1, 0], { clamp: true });
- const contentOp3 = useTransform(scrollYProgress, [0.65, 0.79, 0.83, 0.90], [0, 1, 1, 0], { clamp: true });
- const contentOp4 = useTransform(scrollYProgress, [0.90, 1], [0, 1], { clamp: true });
- const contentOps = [contentOp1, contentOp2, contentOp3, contentOp4];
+ // Arrow & Text appearances (Dedicated trackers to avoid Framer Motion rendering conflict)
+ const [activeStep, setActiveStep] = useState(0);
+
+ useMotionValueEvent(scrollYProgress, "change", (latest) => {
+   if (latest >= 0.79) setActiveStep(4);
+   else if (latest >= 0.52) setActiveStep(3);
+   else if (latest >= 0.26) setActiveStep(2);
+   else if (latest >= 0.05) setActiveStep(1);
+   else setActiveStep(0);
+ });
 
  // Scrubbed Numbers
  const count1 = useTransform(scrollYProgress, [0.13, 0.26], [0, TRUST_STATS[0].value], { clamp: true });
@@ -78,8 +87,8 @@ export default function TrustSection() {
  }
  }
 
- // Adjust horizontal offsets to prevent text overlapping
- const textOffsetX = [-10, 85, 10, 0];
+ // Adjust horizontal offsets to evenly distribute them to prevent text overlapping when all are visible
+ const textOffsetX = [-10, 85, 67, 40];
 
  const labels = TRUST_STATS.map((stat, i) => {
  // Original center angle of the pie slice
@@ -118,30 +127,35 @@ export default function TrustSection() {
  </div>
 
  <div className="relative w-full aspect-[1000/600] max-w-7xl xl:max-w-[1400px] mx-auto mt-4 sm:mt-8">
- 
- {/* HTML Text Overlays */}
- <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-20">
- {labels.map((l, i) => (
- <motion.div 
- key={`text-${i}`}
- className="absolute text-center"
- style={{
- left:`${(l.midX / 1000) * 100}%`,
- top:`2%`,
- x: '-50%',
- opacity: contentOps[i]
- }}
- >
- <div className="text-xl sm:text-2xl md:text-3xl font-extrabold font-poppins text-slate-800 drop-shadow-sm flex items-center justify-center">
- {l.prefix}<AnimatedNumber mv={counts[i]} />{l.suffix}
- </div>
- <div className="text-xs sm:text-sm font-bold text-amber-600 mb-1.5 whitespace-nowrap">{l.label}</div>
- <div className="text-[10px] sm:text-xs text-slate-500 font-medium max-w-[120px] sm:max-w-[160px] mx-auto leading-snug hidden sm:block">
- {l.desc}
- </div>
- </motion.div>
- ))}
- </div>
+        {/* HTML Text Overlays */}
+        <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-20">
+          {isMounted && labels.map((l, i) => {
+            // Stagger texts vertically so they don't overlap horizontally on smaller screens
+            const topPercent = i % 2 === 0 ? 5 : 12;
+            return (
+              <motion.div 
+                key={`text-v2-${i}`}
+                className="absolute text-center"
+                style={{
+                  left: `${(l.midX / 1000) * 100}%`,
+                  top: `${topPercent}%`,
+                  x: '-50%'
+                }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: activeStep > i ? 1 : 0 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+              >
+                <div className="text-xl sm:text-2xl md:text-3xl font-extrabold font-poppins text-slate-800 drop-shadow-sm flex items-center justify-center">
+                  {l.prefix}<AnimatedNumber mv={counts[i]} />{l.suffix}
+                </div>
+                <div className="text-xs sm:text-sm font-bold text-amber-600 mb-1.5 whitespace-nowrap">{l.label}</div>
+                <div className="text-[10px] sm:text-xs text-slate-500 font-medium max-w-[120px] sm:max-w-[160px] mx-auto leading-snug hidden sm:block">
+                  {l.desc}
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
 
  {/* 3D SVG Chart */}
  <svg viewBox="0 0 1000 600" className="w-full h-full overflow-visible drop-shadow-2xl">
@@ -160,21 +174,23 @@ export default function TrustSection() {
  </defs>
 
  {/* Arrows mapped to scroll progress with pathLength */}
- {labels.map((l, i) => (
- <motion.line 
- key={`arrow-${i}`} 
- x1={l.midX} 
- y1={160} 
- x2={l.midX} 
- y2={l.midY - 15} 
- stroke="#f59e0b" 
- strokeWidth="2" 
- markerEnd="url(#arrow)"
- style={{ 
- opacity: contentOps[i], 
- pathLength: contentOps[i]
- }}
- />
+ {isMounted && labels.map((l, i) => (
+  <motion.line 
+    key={`arrow-v2-${i}`} 
+    x1={l.midX} 
+    y1={160} 
+    x2={l.midX} 
+    y2={l.midY - 15} 
+    stroke="#f59e0b" 
+    strokeWidth="2" 
+    markerEnd="url(#arrow)"
+    initial={{ opacity: 0, pathLength: 0 }}
+    animate={{ 
+      opacity: activeStep > i ? 1 : 0, 
+      pathLength: activeStep > i ? 1 : 0
+    }}
+    transition={{ duration: 0.6, ease: "easeOut" }}
+  />
  ))}
 
  {/* Draw Slices */}

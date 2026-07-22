@@ -102,7 +102,7 @@ export default function ContactSection({ onOpenModal }: ContactSectionProps) {
  };
 
  return (
- <section id="contact" className="py-24 bg-mesh-soft border-t border-slate-200/80 relative overflow-hidden scroll-mt-24">
+ <section id="contact" className="py-16 lg:py-24 bg-mesh-soft border-t border-slate-200/80 relative overflow-hidden scroll-mt-24">
  {/* Top strip */}
  <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 animate-gradient-shift" />
 
@@ -172,7 +172,7 @@ export default function ContactSection({ onOpenModal }: ContactSectionProps) {
  href={COMPANY_INFO.instagramUrl}
  target="_blank"
  rel="noopener noreferrer"
- className="px-4 py-2 rounded-xl bg-purple-600/30 hover:bg-purple-600 border border-purple-500/40 text-purple-300 hover:text-white font-semibold text-xs transition-colors"
+ className="px-4 py-2 rounded-xl bg-purple-100 hover:bg-purple-600 border border-purple-200 text-purple-700 hover:text-white font-semibold text-xs transition-colors"
  >
  Connect Instagram
  </a>
@@ -309,6 +309,9 @@ export default function ContactSection({ onOpenModal }: ContactSectionProps) {
  <option value="Private Limited / LLP Setup">Private Limited / LLP Setup</option>
  <option value="CA Certificates & Attestation">CA Certificates & Attestation</option>
  <option value="TDS Return & Compliance">TDS Return & Compliance</option>
+ <option value="Advance Tax Advisory">Advance Tax Advisory</option>
+ <option value="Business Registration">Business Registration</option>
+ <option value="Other Services Required">Other Services Required</option>
  </select>
  </div>
  </div>

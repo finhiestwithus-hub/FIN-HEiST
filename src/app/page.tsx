@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Navbar from '@/components/ui/Navbar';
 import Hero from '@/components/ui/Hero';
-import TrustSection from '@/components/ui/TrustSection';
+import TrustSectionNew from '@/components/ui/TrustSectionNew';
 import ServicesSection from '@/components/ui/ServicesSection';
 import WhyFinHeist from '@/components/ui/WhyFinHeist';
 import ProcessSection from '@/components/ui/ProcessSection';
@@ -33,7 +33,7 @@ export default function HomePage() {
       <Hero onOpenModal={handleOpenModal} />
 
       {/* 3. Animated Trust Counters Section */}
-      <TrustSection />
+      <TrustSectionNew />
 
       {/* 4. Complete Financial & Compliance Services Portfolio (10 Core Practice Areas) */}
       <ServicesSection onOpenModal={handleOpenModal} />

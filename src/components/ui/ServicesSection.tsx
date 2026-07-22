@@ -84,7 +84,7 @@ export default function ServicesSection({ onOpenModal }: ServicesSectionProps) {
  };
 
  return (
- <section id="services" className="pt-24 pb-12 bg-mesh-soft relative overflow-hidden border-t border-slate-200/80 scroll-mt-24">
+ <section id="services" className="pt-16 lg:pt-24 pb-12 bg-mesh-soft relative overflow-hidden border-t border-slate-200/80 scroll-mt-24">
  <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 z-10 animate-gradient-shift" />
 
  {/* Full screen dynamic container max-w-[1760px] */}
@@ -243,9 +243,32 @@ export default function ServicesSection({ onOpenModal }: ServicesSectionProps) {
  })}
  </div>
 
+        {/* Statutory Attestation Note */}
+        <div className="mt-16 w-full max-w-5xl mx-auto">
+          <div className="bg-white border border-slate-200/60 rounded-2xl p-6 md:p-8 flex items-start gap-4 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow duration-300">
+            {/* Decor text / icon */}
+            <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-amber-500 to-yellow-500"></div>
+            <div className="shrink-0 mt-0.5 hidden sm:block">
+              <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center border border-amber-100 group-hover:scale-110 transition-transform duration-300">
+                <ShieldCheck className="w-6 h-6 text-amber-600" />
+              </div>
+            </div>
+            <div>
+              <h4 className="text-sm sm:text-base font-bold text-slate-900 mb-2.5 font-poppins flex items-center gap-2">
+                Statutory Attestation Note
+                <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] uppercase tracking-wider font-extrabold flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" />
+                  Verified
+                </span>
+              </h4>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium text-justify">
+                Statutory audit, tax audit, financial certifications, balance sheet certification, and all other statutory attestations are undertaken by our panel of experienced and duly qualified Chartered Accountants holding a valid Certificate of Practice (CoP). We are committed to delivering accurate, compliant, and professionally certified documentation in accordance with applicable laws and regulatory standards, ensuring our clients receive reliable and high-quality professional services.
+              </p>
+            </div>
+          </div>
+        </div>
 
-
- </div>
- </section>
+      </div>
+    </section>
  );
 }

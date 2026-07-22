@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { X, Lock, Mail, User, Phone, ShieldCheck, ArrowRight, Sparkles, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { X, Lock, Mail, User as UserIcon, Phone, ShieldCheck, ArrowRight, Sparkles, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 export default function AuthModal() {
   const { isAuthModalOpen, setIsAuthModalOpen, authModalMode, setAuthModalMode, signIn, signUp, resetPassword, updatePassword } = useAuth();
@@ -86,8 +86,8 @@ export default function AuthModal() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-lg bg-gradient-to-br from-white via-slate-50 to-[#FCFBFA] border-2 border-slate-200/90 rounded-3xl shadow-[0_25px_80px_-15px_rgba(245,158,11,0.3)] overflow-hidden animate-card-pulse">
-        
+      <div className="relative w-full max-w-lg bg-gradient-to-br from-white via-slate-50 to-[#FCFBFA] border-2 border-slate-200/90 rounded-3xl shadow-[0_25px_80px_-15px_rgba(245,158,11,0.3)] overflow-hidden">
+
         {/* Top Gold Bar */}
         <div className="bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-7 py-5 border-b border-amber-300 flex items-center justify-between shadow-xs">
           <div className="flex items-center gap-3">
@@ -96,7 +96,7 @@ export default function AuthModal() {
             </div>
             <div>
               <h3 className="text-xl sm:text-2xl font-extrabold font-poppins text-slate-950 tracking-tight">
-                {authModalMode === 'login' ? 'CA Admin Sign In' : authModalMode === 'forgot-password' ? 'Reset Password' : 'Set New Password'}
+                {authModalMode === 'login' ? 'Admin Sign In' : authModalMode === 'forgot-password' ? 'Reset Password' : 'Set New Password'}
               </h3>
               <p className="text-xs text-slate-900/90 font-semibold font-inter mt-0.5">
                 {authModalMode === 'login' ? 'Access your consultation dashboard & CA feed' : authModalMode === 'forgot-password' ? 'Enter your email to receive a reset link' : 'Please enter your new secure password'}
@@ -121,7 +121,7 @@ export default function AuthModal() {
                 <span>{successMsg}</span>
               </div>
             )}
-            
+
             {errorMsg && (
               <div className="p-3.5 rounded-2xl bg-red-50 border border-red-300 text-red-800 text-xs font-bold flex items-center gap-2 shadow-2xs animate-fadeIn">
                 <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
@@ -225,21 +225,7 @@ export default function AuthModal() {
             </div>
           </form>
 
-          {/* Quick Info Box */}
-          <div className="mt-5 p-3.5 rounded-2xl bg-slate-100 border border-slate-200 text-center text-xs text-slate-600 font-medium">
-            💡 <strong className="text-slate-900">CA Admin Security:</strong> Admins cannot register via Sign Up. CA team must Sign In with the exact credentials configured in <code className="bg-white px-1.5 py-0.5 rounded border border-slate-300 font-bold text-slate-900">.env.local</code>.
-          </div>
         </div>
-
-        {/* Modal Footer */}
-        <div className="px-7 py-3.5 bg-slate-100/90 border-t border-slate-200/90 flex items-center justify-between text-xs font-bold text-slate-600 font-inter">
-          <span className="flex items-center gap-1.5 text-emerald-700">
-            <ShieldCheck className="w-4 h-4 text-emerald-600" />
-            256-Bit SSL Encrypted Auth
-          </span>
-          <span>🔒 Supabase Secure Portal</span>
-        </div>
-
       </div>
     </div>
   );
