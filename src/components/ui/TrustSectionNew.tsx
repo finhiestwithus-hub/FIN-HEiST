@@ -125,10 +125,11 @@ export default function TrustSectionNew() {
  Numbers that reflect our commitment to quality, accuracy, and compliance excellence.
  </p>
  </div>
-
- <div className="relative w-full aspect-[1000/600] max-w-7xl xl:max-w-[1400px] mx-auto mt-4 sm:mt-8">
-        {/* HTML Text Overlays */}
-        <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-20">
+ 
+ <div className="flex justify-center w-full mt-4 sm:mt-8 px-2">
+  <div className="relative mx-auto w-full" style={{ aspectRatio: '1000/600', maxWidth: '1000px', maxHeight: '65vh' }}>
+         {/* HTML Text Overlays (Hidden on mobile) */}
+        <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-20 hidden sm:block">
           {isMounted && labels.map((l, i) => {
             // Stagger texts vertically so they don't overlap horizontally on smaller screens
             const topPercent = i % 2 === 0 ? 5 : 12;
@@ -177,6 +178,7 @@ export default function TrustSectionNew() {
  {isMounted && labels.map((l, i) => (
   <motion.line 
     key={`arrow-v2-${i}`} 
+    className="hidden sm:block"
     x1={l.midX} 
     y1={160} 
     x2={l.midX} 
@@ -250,6 +252,26 @@ export default function TrustSectionNew() {
  />
  </svg>
  </div>
+ </div>
+
+ {/* Mobile Stats Grid (Visible only on small screens) */}
+ <div className="grid grid-cols-2 gap-4 mt-6 px-4 sm:hidden relative z-30 max-w-md mx-auto">
+   {isMounted && labels.map((l, i) => (
+     <motion.div 
+       key={`mobile-stat-${i}`}
+       className="bg-white/80 backdrop-blur-md p-4 rounded-2xl border border-white shadow-sm text-center"
+       initial={{ opacity: 0, y: 10 }}
+       animate={{ opacity: activeStep > i ? 1 : 0, y: activeStep > i ? 0 : 10 }}
+       transition={{ duration: 0.6, ease: "easeOut" }}
+     >
+       <div className="text-2xl font-extrabold font-poppins text-slate-800 drop-shadow-sm mb-1">
+         {l.prefix}<AnimatedNumber mv={counts[i]} />{l.suffix}
+       </div>
+       <div className="text-[10px] font-bold text-amber-600 leading-tight">{l.label}</div>
+     </motion.div>
+   ))}
+ </div>
+
  </div>
  </div>
  </section>

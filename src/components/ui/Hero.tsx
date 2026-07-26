@@ -21,9 +21,9 @@ export default function Hero({ onOpenModal }: HeroProps) {
 
   // Dynamic Financial Quarter (April-March)
   const currentMonth = new Date().getMonth(); // 0-11
-  const currentQuarter = currentMonth >= 3 && currentMonth <= 5 ? 'Q1' 
-                       : currentMonth >= 6 && currentMonth <= 8 ? 'Q2' 
-                       : currentMonth >= 9 && currentMonth <= 11 ? 'Q3' : 'Q4';
+  const currentQuarter = currentMonth >= 3 && currentMonth <= 5 ? 'Q1'
+    : currentMonth >= 6 && currentMonth <= 8 ? 'Q2'
+      : currentMonth >= 9 && currentMonth <= 11 ? 'Q3' : 'Q4';
 
   useEffect(() => {
     // Trigger smooth entrance animation on every page refresh / mount
@@ -107,7 +107,7 @@ export default function Hero({ onOpenModal }: HeroProps) {
             {/* Subheadline */}
             <p className={`text-lg text-slate-600 font-inter leading-relaxed max-w-2xl transition-all duration-700 delay-300 transform ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
               }`}>
-              <strong className="text-slate-900 font-semibold">FIN-HEIST</strong> is a Accounting, tax & business compliance platform led by two CA Finalists, helping individuals, startups and businesses with Income Tax, GST, Accounting, Company Registration, Financial Documentation and bank-ready CMA & DSCR project reports across India. Instead of FIN-HEIST is a CA practice led by Dual CA Finalists, delivering Income Tax returns, GST compliance, Company registration, and bank-accepted CMA & DSCR project reports across India.
+              <strong className="text-slate-900 font-semibold">FIN-HEIST</strong> is a Accounting, tax & business compliance platform led by two CA Finalists, helping individuals, startups and businesses with Income Tax, GST, Accounting, Company Registration, Financial Documentation and bank-ready CMA & DSCR project reports across India.
             </p>
 
             {/* CTA Buttons */}

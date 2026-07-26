@@ -64,7 +64,7 @@ export default function PDFScanUtility() {
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-500/10 text-purple-600 mb-6 border border-purple-500/20">
           <ScanSearch className="w-8 h-8" />
         </div>
-        <h1 className="text-4xl sm:text-5xl font-extrabold font-poppins text-slate-900 tracking-tight mb-4">
+        <h1 className="text-2xl sm:text-4xl sm:text-5xl font-extrabold font-poppins text-slate-900 tracking-tight mb-4">
           Look Scanned <span className="text-purple-600">Utility</span>
         </h1>
         <p className="text-base sm:text-lg text-slate-600 font-inter max-w-2xl mx-auto">
@@ -72,12 +72,12 @@ export default function PDFScanUtility() {
         </p>
       </div>
 
-      <div className="glass-card rounded-3xl p-8 sm:p-10 border-2 border-slate-200/90 shadow-xl bg-white mb-8">
+      <div className="glass-card rounded-3xl p-4 sm:p-8 sm:p-10 border-2 border-slate-200/90 shadow-xl bg-white mb-8">
         
         {/* Upload Area */}
         {!file && (
           <div 
-            className={`w-full border-3 border-dashed rounded-2xl p-12 text-center transition-all cursor-pointer flex flex-col items-center justify-center min-h-[300px]
+            className={`w-full border-3 border-dashed rounded-2xl p-5 sm:p-12 text-center transition-all cursor-pointer flex flex-col items-center justify-center min-h-[300px]
               ${isDragging ? 'border-purple-500 bg-purple-50/50' : 'border-slate-300 hover:border-purple-400 hover:bg-slate-50'}`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -138,7 +138,7 @@ export default function PDFScanUtility() {
               <div className="flex flex-col items-center justify-center w-full max-w-lg space-y-6 animate-fade-in">
                 
                 {result === 'scanned' ? (
-                  <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-8 text-center w-full shadow-lg shadow-amber-500/10">
+                  <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 sm:p-8 text-center w-full shadow-lg shadow-amber-500/10">
                     <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center text-amber-600 mx-auto mb-4">
                       <SearchX className="w-8 h-8" />
                     </div>
@@ -148,7 +148,7 @@ export default function PDFScanUtility() {
                     </p>
                   </div>
                 ) : (
-                  <div className="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-8 text-center w-full shadow-lg shadow-emerald-500/10">
+                  <div className="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-4 sm:p-8 text-center w-full shadow-lg shadow-emerald-500/10">
                     <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 mx-auto mb-4">
                       <CheckCircle2 className="w-8 h-8" />
                     </div>

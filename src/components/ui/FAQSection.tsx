@@ -75,14 +75,14 @@ export default function FAQSection() {
                                 <button
                                     type="button"
                                     onClick={() => toggleAccordion(faq.id)}
-                                    className="w-full p-5 text-left flex items-center justify-between gap-4 font-poppins text-base font-bold text-slate-900 hover:text-amber-700 transition-colors"
+                                    className="w-full p-4 sm:p-5 text-left flex items-start sm:items-center justify-between gap-3 sm:gap-4 font-poppins text-base font-bold text-slate-900 hover:text-amber-700 transition-colors"
                                 >
-                                    <span className="flex items-center gap-3 flex-1">
-                                        <span className={`text-xs font-bold shrink-0 px-2.5 py-1 rounded-lg border font-mono ${isOpen ? 'bg-amber-500/20 text-amber-800 border-amber-400/50' : 'bg-slate-100 text-slate-600 border-slate-200'
+                                    <span className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 flex-1">
+                                        <span className={`text-[10px] sm:text-xs font-bold shrink-0 px-2.5 py-1 rounded-lg border font-mono ${isOpen ? 'bg-amber-500/20 text-amber-800 border-amber-400/50' : 'bg-slate-100 text-slate-600 border-slate-200'
                                             }`}>
                                             {faq.category}
                                         </span>
-                                        <span className="font-semibold text-sm sm:text-base">{faq.question}</span>
+                                        <span className="font-semibold text-sm sm:text-base leading-snug">{faq.question}</span>
                                     </span>
                                     <ChevronDown
                                         className={`w-5 h-5 text-amber-500 shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''

@@ -1,256 +1,325 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Calculator, Landmark, AlertTriangle } from 'lucide-react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { ArrowLeft, Calculator, Calendar, DollarSign, Percent, PieChart, Info, Target } from 'lucide-react';
+import { PieChart as RechartsPieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 export default function EMICalculator() {
-  const [loanAmount, setLoanAmount] = useState<number>(5000000);
-  const [interestRate, setInterestRate] = useState<number>(9.5);
-  const [tenureYears, setTenureYears] = useState<number>(15);
+  const [mode, setMode] = useState<'loan' | 'budget'>('loan');
+  const [principal, setPrincipal] = useState<number>(5000000);
+  const [budgetEmi, setBudgetEmi] = useState<number>(50000);
+  const [interestRate, setInterestRate] = useState<number>(8.5);
+  const [tenure, setTenure] = useState<number>(20);
+  const [tenureType, setTenureType] = useState<'years' | 'months'>('years');
 
-  const formatINR = (num: number) => {
-    return num.toLocaleString('en-IN', { maximumFractionDigits: 0 });
-  };
+  // EMI & Budget Calculation Logic
+  const calculationData = useMemo(() => {
+    const R = interestRate;
+    const T = tenure;
 
-  // EMI Calculation
-  const r = (interestRate / 12) / 100;
-  const n = tenureYears * 12;
-  const p = loanAmount;
-  
-  let emi = 0;
-  let totalPayment = 0;
-  let totalInterest = 0;
-  
-  if (r > 0 && n > 0 && p > 0) {
-    emi = p * r * (Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1));
-    totalPayment = emi * n;
-    totalInterest = totalPayment - p;
-  } else if (p > 0 && n > 0 && r === 0) {
-    emi = p / n;
-    totalPayment = p;
-    totalInterest = 0;
-  }
+    if (R <= 0 || T <= 0 || isNaN(R) || isNaN(T)) {
+      return {
+        emi: 0,
+        principal: 0,
+        totalInterest: 0,
+        totalPayment: 0,
+      };
+    }
 
-  // Chart Data
+    const n = tenureType === 'years' ? T * 12 : T;
+    const r = R / 12 / 100;
+
+    let computedEmi = 0;
+    let computedPrincipal = 0;
+
+    if (mode === 'loan') {
+      const P = principal;
+      if (P <= 0 || isNaN(P)) return { emi: 0, principal: 0, totalInterest: 0, totalPayment: 0 };
+      computedPrincipal = P;
+      computedEmi = (P * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+    } else {
+      const E = budgetEmi;
+      if (E <= 0 || isNaN(E)) return { emi: 0, principal: 0, totalInterest: 0, totalPayment: 0 };
+      computedEmi = E;
+      computedPrincipal = (E * (Math.pow(1 + r, n) - 1)) / (r * Math.pow(1 + r, n));
+    }
+
+    const totalPayment = computedEmi * n;
+    const totalInterest = totalPayment - computedPrincipal;
+
+    return {
+      emi: computedEmi,
+      principal: computedPrincipal,
+      totalInterest: totalInterest > 0 ? totalInterest : 0,
+      totalPayment: totalPayment > 0 ? totalPayment : 0,
+    };
+  }, [mode, principal, budgetEmi, interestRate, tenure, tenureType]);
+
   const chartData = [
-    { name: 'Principal Amount', value: p, color: '#10b981' }, // emerald-500
-    { name: 'Total Interest', value: totalInterest, color: '#f59e0b' } // amber-500
+    { name: 'Principal Loan Amount', value: calculationData.principal },
+    { name: 'Total Interest', value: calculationData.totalInterest }
   ];
+  const COLORS = ['#f59e0b', '#cbd5e1']; // amber-500, slate-300
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-8 py-12">
-      {/* Back Button */}
-      <Link href="/#calculators" className="inline-flex items-center gap-2 text-amber-600 hover:text-amber-700 font-bold mb-8 transition-colors">
-        <ArrowLeft className="w-4 h-4" />
-        Back to Utilities Hub
-      </Link>
-
-      <div className="text-center mb-12">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-500/10 text-amber-500 mb-6 border border-amber-500/20">
-          <Calculator className="w-8 h-8" />
+    <div className="min-h-screen py-12 px-4 sm:px-8 lg:px-12 xl:px-16 max-w-[1760px] mx-auto animate-fadeIn">
+      {/* Header */}
+      <div className="mb-10 flex flex-col gap-4">
+        <Link href="/?tab=finance#calculators" className="inline-flex items-center gap-2 text-amber-600 hover:text-amber-500 font-semibold text-sm transition-colors w-fit">
+          <ArrowLeft className="w-4 h-4" /> Back to Calculators
+        </Link>
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+          <div className="max-w-3xl">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
+                <Calculator className="w-5 h-5 text-white" />
+              </div>
+              <h1 className="text-xl sm:text-3xl sm:text-4xl font-extrabold font-poppins text-slate-900 tracking-tight">
+                Loan EMI & Budget Calculator
+              </h1>
+            </div>
+            <p className="text-slate-600 font-inter text-sm sm:text-base leading-relaxed">
+              Calculate your monthly EMI based on a loan amount, or work backward to find your maximum eligible loan amount based on your monthly budget.
+            </p>
+          </div>
         </div>
-        <h1 className="text-4xl sm:text-5xl font-extrabold font-poppins text-slate-900 tracking-tight mb-4">
-          Loan EMI <span className="text-amber-600">Calculator</span>
-        </h1>
-        <p className="text-base sm:text-lg text-slate-600 font-inter max-w-2xl mx-auto">
-          Calculate your monthly EMI, total interest payable, and total payment for home loans, personal loans, or business loans.
-        </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+      {/* Mode Tabs */}
+      <div className="mb-8 flex gap-2 p-1.5 bg-slate-100 rounded-2xl w-fit border border-slate-200">
+        <button
+          onClick={() => setMode('loan')}
+          className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
+            mode === 'loan' 
+              ? 'bg-white text-slate-900 shadow-sm border border-slate-200/50' 
+              : 'text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          <Calculator className="w-4 h-4" />
+          Calculator
+        </button>
+        <button
+          onClick={() => setMode('budget')}
+          className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
+            mode === 'budget' 
+              ? 'bg-white text-slate-900 shadow-sm border border-slate-200/50' 
+              : 'text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          <Target className="w-4 h-4" />
+          Budget &rarr; Loan
+        </button>
+      </div>
+
+      <div className="flex flex-col lg:flex-row gap-4 sm:gap-8">
         
-        {/* Left Column: Inputs */}
-        <div className="lg:col-span-6 space-y-6">
-          <div className="glass-card rounded-3xl p-8 border-2 border-slate-200/90 shadow-xl bg-white h-full">
-            <h3 className="text-xl font-bold font-poppins text-slate-900 mb-8 border-b border-slate-100 pb-4 flex items-center gap-2">
-              <Landmark className="w-5 h-5 text-amber-500" />
-              Loan Details
+        {/* Left Column - Inputs */}
+        <div className="w-full lg:w-[45%] flex flex-col gap-6">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200">
+            <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+              <span className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">1</span>
+              {mode === 'loan' ? 'Loan Details' : 'Budget Details'}
             </h3>
-            
-            <div className="space-y-8">
-              {/* Loan Amount */}
-              <div className="space-y-4">
-                <div className="flex justify-between items-center text-sm font-bold">
-                  <span className="text-slate-700">Loan Amount</span>
-                  <div className="relative w-1/3 sm:w-1/2">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <span className="text-slate-400 font-bold">₹</span>
+
+            <div className="space-y-6">
+              
+              {mode === 'loan' ? (
+                /* Principal Input */
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700 block">Loan Amount (₹)</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <span className="text-slate-400 font-medium">₹</span>
                     </div>
-                    <input 
+                    <input
                       type="number"
-                      value={loanAmount || ''} 
-                      onChange={(e) => setLoanAmount(Number(e.target.value))}
-                      className="w-full pl-8 p-2 rounded-lg border-2 border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 outline-none text-right"
+                      value={principal || ''}
+                      onChange={(e) => setPrincipal(Number(e.target.value))}
+                      className="block w-full pl-10 pr-4 py-3.5 border border-slate-200 rounded-2xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all font-semibold text-slate-900"
+                      placeholder="Enter loan amount"
                     />
                   </div>
                 </div>
-                <input 
-                  type="range" 
-                  min="100000" 
-                  max="100000000" 
-                  step="50000" 
-                  value={loanAmount} 
-                  onChange={(e) => setLoanAmount(Number(e.target.value))} 
-                  className="w-full h-2 rounded-lg bg-slate-200 accent-amber-500 cursor-pointer" 
-                />
-              </div>
+              ) : (
+                /* Budget Input */
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700 block">Monthly Budget / EMI (₹)</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <span className="text-slate-400 font-medium">₹</span>
+                    </div>
+                    <input
+                      type="number"
+                      value={budgetEmi || ''}
+                      onChange={(e) => setBudgetEmi(Number(e.target.value))}
+                      className="block w-full pl-10 pr-4 py-3.5 border border-slate-200 rounded-2xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all font-semibold text-slate-900"
+                      placeholder="Max EMI you can afford"
+                    />
+                  </div>
+                  <p className="text-xs text-slate-500 font-medium">Enter the maximum EMI you are comfortable paying each month.</p>
+                </div>
+              )}
 
               {/* Interest Rate */}
-              <div className="space-y-4">
-                <div className="flex justify-between items-center text-sm font-bold">
-                  <span className="text-slate-700">Interest Rate (% P.A.)</span>
-                  <div className="relative w-1/3 sm:w-1/4">
-                    <input 
-                      type="number"
-                      value={interestRate || ''} 
-                      onChange={(e) => setInterestRate(Number(e.target.value))}
-                      className="w-full pr-8 p-2 rounded-lg border-2 border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 outline-none text-right"
-                    />
-                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                      <span className="text-slate-400 font-bold">%</span>
-                    </div>
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-700 block">Interest Rate (% per annum)</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Percent className="h-5 w-5 text-slate-400" />
                   </div>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={interestRate || ''}
+                    onChange={(e) => setInterestRate(Number(e.target.value))}
+                    className="block w-full pl-11 pr-4 py-3.5 border border-slate-200 rounded-2xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all font-semibold text-slate-900"
+                    placeholder="e.g. 8.5"
+                  />
                 </div>
-                <input 
-                  type="range" 
-                  min="1" 
-                  max="30" 
-                  step="0.1" 
-                  value={interestRate} 
-                  onChange={(e) => setInterestRate(Number(e.target.value))} 
-                  className="w-full h-2 rounded-lg bg-slate-200 accent-amber-500 cursor-pointer" 
-                />
               </div>
 
               {/* Tenure */}
-              <div className="space-y-4">
-                <div className="flex justify-between items-center text-sm font-bold">
-                  <span className="text-slate-700">Loan Tenure (Years)</span>
-                  <div className="relative w-1/3 sm:w-1/4">
-                    <input 
-                      type="number"
-                      value={tenureYears || ''} 
-                      onChange={(e) => setTenureYears(Number(e.target.value))}
-                      className="w-full pr-10 p-2 rounded-lg border-2 border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 outline-none text-right"
-                    />
-                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                      <span className="text-slate-400 font-bold text-xs">Yr</span>
-                    </div>
+              <div className="space-y-2">
+                <div className="flex justify-between items-end mb-1">
+                  <label className="text-sm font-bold text-slate-700">Tenure</label>
+                  <div className="flex bg-slate-100 rounded-lg p-1">
+                    <button
+                      onClick={() => setTenureType('years')}
+                      className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${tenureType === 'years' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                      Years
+                    </button>
+                    <button
+                      onClick={() => setTenureType('months')}
+                      className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${tenureType === 'months' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                      Months
+                    </button>
                   </div>
                 </div>
-                <input 
-                  type="range" 
-                  min="1" 
-                  max="30" 
-                  step="1" 
-                  value={tenureYears} 
-                  onChange={(e) => setTenureYears(Number(e.target.value))} 
-                  className="w-full h-2 rounded-lg bg-slate-200 accent-amber-500 cursor-pointer" 
-                />
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Calendar className="h-5 w-5 text-slate-400" />
+                  </div>
+                  <input
+                    type="number"
+                    value={tenure || ''}
+                    onChange={(e) => setTenure(Number(e.target.value))}
+                    className="block w-full pl-11 pr-4 py-3.5 border border-slate-200 rounded-2xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all font-semibold text-slate-900"
+                    placeholder={`Enter tenure in ${tenureType}`}
+                  />
+                </div>
               </div>
 
             </div>
           </div>
+
+          <div className="bg-amber-50 rounded-3xl p-6 sm:p-8 border border-amber-100">
+            <h4 className="text-sm font-bold text-amber-900 mb-2 flex items-center gap-2">
+              <Info className="w-4 h-4 text-amber-600" />
+              Reducing Balance Method
+            </h4>
+            <p className="text-xs sm:text-sm text-amber-800/80 leading-relaxed font-medium">
+              This calculator uses the reducing balance method standard across all Indian banks. Interest is strictly calculated only on the remaining outstanding principal each month, making it cheaper than flat-rate loans.
+            </p>
+          </div>
         </div>
 
-        {/* Right Column: Outputs */}
-        <div className="lg:col-span-6">
-          <div className="glass-card rounded-3xl p-8 sm:p-10 border-2 border-slate-200/90 shadow-xl bg-gradient-to-br from-slate-50 via-white to-emerald-50/30 h-full flex flex-col relative overflow-hidden">
-            
-            <h3 className="text-center text-sm font-bold uppercase tracking-widest text-slate-500 mb-6">
-              Repayment Summary
+        {/* Right Column - Results */}
+        <div className="w-full lg:w-[55%] flex flex-col gap-6">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 h-full flex flex-col">
+            <h3 className="text-lg font-bold text-slate-900 mb-8 flex items-center gap-2">
+              <span className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">2</span>
+              Calculation Result
             </h3>
 
-            <div className="flex-1 flex flex-col justify-center">
-              {/* Monthly EMI Highlight */}
-              <div className="text-center mb-8">
-                <p className="text-slate-500 font-bold text-sm mb-2">Monthly EMI</p>
-                <div className="text-4xl sm:text-5xl font-mono font-extrabold text-amber-600 tracking-tight">
-                  ₹{formatINR(Math.round(emi))}
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+              {mode === 'loan' ? (
+                <div className="bg-slate-50 rounded-2xl p-5 border border-slate-200">
+                  <p className="text-sm text-slate-500 font-bold mb-1">Monthly EMI</p>
+                  <p className="text-xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                    ₹{calculationData.emi.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                  </p>
                 </div>
+              ) : (
+                <div className="bg-amber-50 rounded-2xl p-5 border border-amber-200">
+                  <p className="text-sm text-amber-700 font-bold mb-1">Max Eligible Loan</p>
+                  <p className="text-xl sm:text-3xl font-black text-amber-900 tracking-tight">
+                    ₹{calculationData.principal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                  </p>
+                </div>
+              )}
+              
+              <div className="bg-slate-50 rounded-2xl p-5 border border-slate-200">
+                <p className="text-sm text-slate-500 font-bold mb-1">Total Interest</p>
+                <p className="text-xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                  ₹{calculationData.totalInterest.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                </p>
               </div>
+              
+              {mode === 'loan' ? (
+                <div className="bg-slate-50 rounded-2xl p-5 border border-slate-200">
+                  <p className="text-sm text-slate-500 font-bold mb-1">Principal Amount</p>
+                  <p className="text-2xl font-bold text-slate-700">
+                    ₹{calculationData.principal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-slate-50 rounded-2xl p-5 border border-slate-200">
+                  <p className="text-sm text-slate-500 font-bold mb-1">Monthly EMI</p>
+                  <p className="text-2xl font-bold text-slate-700">
+                    ₹{calculationData.emi.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                  </p>
+                </div>
+              )}
 
-              {/* Chart & Details */}
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-8 mb-8">
-                
-                {/* Donut Chart */}
-                <div className="w-48 h-48 relative">
+              <div className="bg-amber-500 rounded-2xl p-5 border border-amber-600 shadow-md shadow-amber-500/20 text-white">
+                <p className="text-sm text-amber-100 font-bold mb-1">Total Payment (Pr + Int)</p>
+                <p className="text-2xl font-bold">
+                  ₹{calculationData.totalPayment.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                </p>
+              </div>
+            </div>
+
+            {/* Pie Chart */}
+            <div className="flex-grow flex flex-col items-center justify-center min-h-[250px]">
+              {calculationData.principal > 0 && calculationData.totalInterest > 0 ? (
+                <div className="w-full h-64">
                   <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
+                    <RechartsPieChart>
                       <Pie
                         data={chartData}
                         cx="50%"
                         cy="50%"
                         innerRadius={60}
-                        outerRadius={80}
-                        paddingAngle={5}
+                        outerRadius={90}
+                        paddingAngle={2}
                         dataKey="value"
-                        stroke="none"
                       >
                         {chartData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
                       <Tooltip 
-                        formatter={(value: any) => `₹${formatINR(Math.round(value))}`}
-                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                        formatter={(value: any) => `₹${Number(value).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
+                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }}
                       />
-                    </PieChart>
+                      <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                    </RechartsPieChart>
                   </ResponsiveContainer>
-                  {/* Inner text for chart */}
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <Calculator className="w-8 h-8 text-slate-300" />
-                  </div>
                 </div>
-
-                {/* Legend & Breakdown */}
-                <div className="flex-1 space-y-4 w-full">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
-                      <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-                      Principal Amount
-                    </div>
-                    <div className="text-lg font-mono font-bold text-slate-900 pl-5">
-                      ₹{formatINR(Math.round(p))}
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
-                      <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-                      Total Interest
-                    </div>
-                    <div className="text-lg font-mono font-bold text-slate-900 pl-5">
-                      ₹{formatINR(Math.round(totalInterest))}
-                    </div>
-                  </div>
-
-                  <div className="pt-3 border-t border-slate-200">
-                    <div className="text-xs font-bold text-slate-500 mb-1">Total Payment</div>
-                    <div className="text-xl font-mono font-black text-slate-900">
-                      ₹{formatINR(Math.round(totalPayment))}
-                    </div>
-                  </div>
+              ) : (
+                <div className="flex flex-col items-center text-slate-400">
+                  <PieChart className="w-16 h-16 opacity-20 mb-3" />
+                  <p className="text-sm font-medium">Enter details to see breakdown</p>
                 </div>
-              </div>
+              )}
             </div>
-
-            <Link href="/?contact=loan" className="w-full py-4 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-600 hover:to-yellow-600 text-slate-950 font-poppins font-extrabold text-sm sm:text-base shadow-xl shadow-amber-500/20 transform hover:-translate-y-1 transition-all flex items-center justify-center gap-2">
-              Apply for Project Report & Bank Loan
-            </Link>
 
           </div>
         </div>
-      </div>
-
-      {/* Disclaimer */}
-      <div className="mt-12 p-6 bg-white/50 border border-slate-200 rounded-2xl text-xs text-slate-500 flex items-start gap-3">
-        <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />
-        <p>
-          <strong className="text-slate-700">Disclaimer:</strong> This EMI calculator provides an estimation based on the inputs provided and uses a standard reducing balance formula. Actual EMI, interest rates, and loan terms may vary based on your lender's specific policies, processing fees, CIBIL score, and loan type. This tool should not be considered as a guarantee of loan approval or exact financial figures.
-        </p>
       </div>
 
     </div>

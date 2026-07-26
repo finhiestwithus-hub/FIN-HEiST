@@ -63,6 +63,7 @@ export interface TeamMember {
   qualifications: string;
   expertise: string[];
   bio: string;
+  imageUrl?: string;
   linkedin?: string;
   email?: string;
   isAdvisory?: boolean;

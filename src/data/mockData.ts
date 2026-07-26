@@ -481,6 +481,7 @@ export const TEAM_MEMBERS: TeamMember[] = [
     qualifications: 'CA Finalist | B.Com (Hons.)',
     expertise: ['Income Tax Filings', 'GST Compliance', 'Financial Documentation', 'Project Reports & Bank Loans', 'Regulatory Advisory'],
     bio: 'Vineet Choudhary is a CA Finalist with practical experience in taxation, GST, accounting, audit support, financial reporting, and business compliance. He has worked extensively on income tax filings, GST compliance, financial documentation, project reports, bank loan documentation, and regulatory advisory for individuals and MSMEs. His client-focused approach emphasizes practical solutions, transparency, and timely execution.',
+    imageUrl: '/images/vineet.jpeg',
     linkedin: 'https://linkedin.com/company/fin-heist',
     email: 'finhiestwithus@gmail.com',
     isAdvisory: false
@@ -493,6 +494,7 @@ export const TEAM_MEMBERS: TeamMember[] = [
     qualifications: 'CA Finalist | B.Com | M.Com',
     expertise: ['Accounting & Tally', 'Direct & Indirect Taxation', 'Statutory Audit Support', 'Financial Reporting', 'Business Advisory'],
     bio: ' Anshika Sahu is a CA Finalist with a strong academic background in Commerce and Finance. She specializes in accounting, taxation, statutory compliance, financial reporting, and business advisory services. With a detail-oriented approach and commitment to excellence, she assists individuals, startups, and businesses in meeting their financial and regulatory requirements efficiently.',
+    imageUrl: '/images/anshika.jpeg',
     linkedin: 'https://linkedin.com/company/fin-heist',
     email: 'finhiestwithus@gmail.com',
     isAdvisory: false
@@ -587,7 +589,7 @@ export const FAQ_ITEMS: FAQItem[] = [
     id: 'faq-1',
     category: 'GST & Registration',
     question: 'How long does GST registration take?',
-    answer: 'Once all required documents (PAN, Aadhaar, photograph, business address proof, and electricity bill/rent agreement) are submitted to us, we file your GST registration application the same business day. Typically, the GST department issues the Certificate of Registration along with your GSTIN within 3 to 7 working days, subject to jurisdictional officer verification.'
+    answer: 'Once all required documents (PAN, Aadhaar, photograph, business address proof, and electricity bill/rent agreement) are submitted to us, we file your GST registration application the same business day. Typically, the GST department issues the Certificate of Registration along with your GSTIN within 3 hours or to 7 working days, subject to jurisdictional officer verification.'
   },
   {
     id: 'faq-2',
@@ -629,7 +631,7 @@ export const FAQ_ITEMS: FAQItem[] = [
     id: 'faq-8',
     category: 'Bank Loan Support',
     question: 'Does Fin-Heist directly sanction or guarantee bank loans?',
-    answer: 'Per our official Loan Disclaimer: Fin-Heist is a professional financial documentation, structuring, and advisory firm. We are not a bank, NBFC, or lending institution and do not directly disburse loans. We prepare high-quality CMA reports, DSCR projections, and application packages that dramatically improve your alignment with lender criteria, though final sanctioning remains at the sole discretion of the respective bank.'
+    answer: 'As per our official Loan Disclaimer: Fin-Heist is a professional financial documentation, structuring, and advisory firm. We are not a bank, NBFC, or lending institution and do not directly disburse loans. We prepare high-quality CMA reports, DSCR projections, and application packages that dramatically improve your alignment with lender criteria, though final sanctioning remains at the sole discretion of the respective bank.'
   }
 ];
 
@@ -643,7 +645,7 @@ export const COMPANY_INFO = {
   whatsappNumber: '919027661642',
   address: 'Dehradun, Uttarakhand & Digital Pan-India Operation',
   location: 'Dehradun City & Pan-India',
-  hours: 'Monday – Saturday: 9:30 AM to 7:30 PM (IST) | Online Consultation 24/7'
+  hours: 'Monday – Saturday: 10:00 AM to 6:00 PM (IST) | Online Consultation 24/7'
 };
 
 export const UTILITY_CATEGORIES = [

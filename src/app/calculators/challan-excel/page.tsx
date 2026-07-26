@@ -62,7 +62,7 @@ export default function ChallanConverter() {
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-500/10 text-blue-600 mb-6 border border-blue-500/20">
           <Building2 className="w-8 h-8" />
         </div>
-        <h1 className="text-4xl sm:text-5xl font-extrabold font-poppins text-slate-900 tracking-tight mb-4">
+        <h1 className="text-2xl sm:text-4xl sm:text-5xl font-extrabold font-poppins text-slate-900 tracking-tight mb-4">
           Challan PDF to <span className="text-blue-600">Excel Converter</span>
         </h1>
         <p className="text-base sm:text-lg text-slate-600 font-inter max-w-2xl mx-auto">
@@ -70,12 +70,12 @@ export default function ChallanConverter() {
         </p>
       </div>
 
-      <div className="glass-card rounded-3xl p-8 sm:p-10 border-2 border-slate-200/90 shadow-xl bg-white mb-8">
+      <div className="glass-card rounded-3xl p-4 sm:p-8 sm:p-10 border-2 border-slate-200/90 shadow-xl bg-white mb-8">
         
         {/* Upload Area */}
         {!file && (
           <div 
-            className={`w-full border-3 border-dashed rounded-2xl p-12 text-center transition-all cursor-pointer flex flex-col items-center justify-center min-h-[300px]
+            className={`w-full border-3 border-dashed rounded-2xl p-5 sm:p-12 text-center transition-all cursor-pointer flex flex-col items-center justify-center min-h-[300px]
               ${isDragging ? 'border-blue-500 bg-blue-50/50' : 'border-slate-300 hover:border-blue-400 hover:bg-slate-50'}`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}

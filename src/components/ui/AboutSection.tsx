@@ -124,7 +124,7 @@ export default function AboutSection({ onOpenModal }: AboutSectionProps) {
                             <p className="text-base sm:text-lg text-slate-600 font-inter leading-relaxed">
                                 Fin-Heist is a modern finance, taxation and business compliance firm dedicated to simplifying regulatory requirements for individuals, startups, MSMEs, and growing businesses.
                             </p>
-                            <p className="text-sm text-slate-500 font-inter leading-relaxed">
+                            <p className="text-base sm:text-lg text-slate-600 font-inter leading-relaxed">
                                 The firm is led by two CA Finalists in partnership, bringing deep domain experience across Income Tax Filing, GST Compliance, Business Registrations, Accounting & Bookkeeping, TDS Compliance, Financial Documentation, and Bank Loan Assistance.
                             </p>
                         </div>

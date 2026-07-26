@@ -1,203 +1,353 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, AlertTriangle, Calendar, FileText } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, IndianRupee, Calendar, CheckCircle } from 'lucide-react';
 
-export default function TDSPenaltyCalculator() {
-  const [tdsAmount, setTdsAmount] = useState<number>(10000);
-  const [delayDeduction, setDelayDeduction] = useState<number>(0); // months
-  const [delayPayment, setDelayPayment] = useState<number>(2); // months
-  const [delayFilingDays, setDelayFilingDays] = useState<number>(15); // days
+type TabMode = 'late-deduction' | 'late-payment' | 'late-filing' | 'all';
 
-  const formatINR = (num: number) => {
-    return num.toLocaleString('en-IN', { maximumFractionDigits: 0 });
-  };
+// --- Utilities ---
+function getTdsDueDate(deductionDateStr: string) {
+  if (!deductionDateStr) return null;
+  const d = new Date(deductionDateStr);
+  const month = d.getMonth(), year = d.getFullYear();
+  if (month === 2) return new Date(year, 3, 30);
+  let nm = month + 1, ny = year;
+  if (nm > 11) { nm = 0; ny++; }
+  return new Date(ny, nm, 7);
+}
 
-  // Logic
-  // Sec 201(1A): 1% per month for late deduction
-  const interestLateDeduction = tdsAmount * 0.01 * delayDeduction;
+function countMonths(fromDateStr: string, toDateStr: string) {
+  if (!fromDateStr || !toDateStr) return 0;
+  const fromDate = new Date(fromDateStr);
+  const toDate = new Date(toDateStr);
   
-  // Sec 201(1A): 1.5% per month for late payment
-  const interestLatePayment = tdsAmount * 0.015 * delayPayment;
+  fromDate.setHours(0,0,0,0);
+  toDate.setHours(0,0,0,0);
   
-  // Sec 234E: 200 per day capped at TDS amount
-  const lateFilingFeeRaw = delayFilingDays * 200;
-  const lateFilingFee = Math.min(lateFilingFeeRaw, tdsAmount);
+  if (toDate <= fromDate) return 0;
+  
+  let months = 0;
+  let cursor = new Date(fromDate.getFullYear(), fromDate.getMonth(), 1);
+  while (cursor <= toDate) { 
+    months++; 
+    cursor.setMonth(cursor.getMonth() + 1); 
+  }
+  return months;
+}
 
-  const totalPenalty = interestLateDeduction + interestLatePayment + lateFilingFee;
-  const totalPayable = tdsAmount + totalPenalty;
+function fmtDate(d: Date | string | null) {
+  if (!d) return '—';
+  const dt = typeof d === 'string' ? new Date(d) : d;
+  if (isNaN(dt.getTime())) return '—';
+  return dt.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+export default function TdsPenaltyCalculator() {
+  const [tab, setTab] = useState<TabMode>('late-deduction');
+  const [tdsAmount, setTdsAmount] = useState<string>('');
+
+  // Dates
+  const [creditDate, setCreditDate] = useState<string>('');
+  const [deductionDate, setDeductionDate] = useState<string>('');
+  const [paymentDate, setPaymentDate] = useState<string>('');
+  const [filingDueDate, setFilingDueDate] = useState<string>('');
+  const [actualFilingDate, setActualFilingDate] = useState<string>('');
+
+  // --- Calculation Logic ---
+  const result = useMemo(() => {
+    const tds = Number(tdsAmount);
+    if (!tds || tds <= 0) return null;
+
+    let totalLiability = 0;
+    
+    // 1. Late Deduction
+    let ldInterest = 0, ldMonths = 0;
+    if (['late-deduction', 'all'].includes(tab) && creditDate && deductionDate) {
+      ldMonths = countMonths(creditDate, deductionDate);
+      ldInterest = Math.round(tds * 0.01 * ldMonths);
+    }
+
+    // 2. Late Payment
+    let lpInterest = 0, lpMonths = 0;
+    let computedDueDate: Date | null = null;
+    if (['late-payment', 'all'].includes(tab) && deductionDate && paymentDate) {
+      computedDueDate = getTdsDueDate(deductionDate);
+      if (computedDueDate) {
+        const pd = new Date(paymentDate);
+        pd.setHours(0,0,0,0);
+        computedDueDate.setHours(0,0,0,0);
+        if (pd > computedDueDate) {
+          lpMonths = countMonths(deductionDate, paymentDate);
+          lpInterest = Math.round(tds * 0.015 * lpMonths);
+        }
+      }
+    }
+
+    // 3. Late Filing (234E)
+    let lfFee = 0, lfDays = 0;
+    if (['late-filing', 'all'].includes(tab) && filingDueDate && actualFilingDate) {
+      const fd = new Date(filingDueDate); fd.setHours(0,0,0,0);
+      const fa = new Date(actualFilingDate); fa.setHours(0,0,0,0);
+      if (fa > fd) {
+        lfDays = Math.floor((fa.getTime() - fd.getTime()) / (1000*60*60*24));
+        lfFee = Math.min(lfDays * 200, tds); // Capped at TDS amount
+      }
+    }
+
+    totalLiability = ldInterest + lpInterest + lfFee;
+
+    return {
+      tds,
+      ldInterest, ldMonths,
+      lpInterest, lpMonths, computedDueDate,
+      lfFee, lfDays,
+      totalLiability
+    };
+
+  }, [tab, tdsAmount, creditDate, deductionDate, paymentDate, filingDueDate, actualFilingDate]);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-8 py-12">
-      {/* Back Button */}
-      <Link href="/#calculators" className="inline-flex items-center gap-2 text-amber-600 hover:text-amber-700 font-bold mb-8 transition-colors">
-        <ArrowLeft className="w-4 h-4" />
-        Back to Utilities Hub
-      </Link>
-
-      <div className="text-center mb-12">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-500/10 text-red-500 mb-6 border border-red-500/20">
-          <AlertTriangle className="w-8 h-8" />
+    <div className="min-h-screen py-12 px-4 sm:px-8 lg:px-12 xl:px-16 max-w-[1760px] mx-auto animate-fadeIn bg-slate-50/50">
+      
+      {/* Header */}
+      <div className="mb-10 flex flex-col gap-4">
+        <Link href="/?tab=tds-tcs#calculators" className="inline-flex items-center gap-2 text-rose-600 hover:text-rose-500 font-semibold text-sm transition-colors w-fit">
+          <ArrowLeft className="w-4 h-4" /> Back to Calculators
+        </Link>
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+          <div className="max-w-3xl">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500 to-rose-700 flex items-center justify-center shadow-lg shadow-rose-500/20">
+                <AlertTriangle className="w-5 h-5 text-white" />
+              </div>
+              <h1 className="text-xl sm:text-3xl sm:text-4xl font-extrabold font-poppins text-slate-900 tracking-tight">
+                TDS Interest & Late Filing Calculator
+              </h1>
+            </div>
+            <p className="text-slate-600 font-inter text-sm sm:text-base leading-relaxed">
+              Calculate interest on late deduction, late payment & late filing fee (Section 234E) — complete liability summary with applicable sections and rates.
+            </p>
+          </div>
         </div>
-        <h1 className="text-4xl sm:text-5xl font-extrabold font-poppins text-slate-900 tracking-tight mb-4">
-          TDS Interest & Penalty <span className="text-red-600">Calculator</span>
-        </h1>
-        <p className="text-base sm:text-lg text-slate-600 font-inter max-w-2xl mx-auto">
-          Calculate interest for late deduction (1%), late payment (1.5%) u/s 201(1A), and late filing fees of ₹200/day u/s 234E of the Income Tax Act.
-        </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+      {/* Tabs */}
+      <div className="mb-8 flex flex-wrap gap-2 p-1.5 bg-slate-100 rounded-2xl w-fit border border-slate-200">
+        {[
+          { id: 'late-deduction', label: 'Late Deduction (1%)' },
+          { id: 'late-payment', label: 'Late Payment (1.5%)' },
+          { id: 'late-filing', label: 'Late Filing 234E' },
+          { id: 'all', label: 'All Three' }
+        ].map(t => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id as TabMode)}
+            className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
+              tab === t.id 
+                ? 'bg-white text-slate-900 shadow-sm border border-slate-200/50' 
+                : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex flex-col lg:flex-row gap-4 sm:gap-8 items-start">
         
-        {/* Left Column: Inputs */}
-        <div className="lg:col-span-6 space-y-6">
-          <div className="glass-card rounded-3xl p-8 border-2 border-slate-200/90 shadow-xl bg-white h-full">
-            <h3 className="text-xl font-bold font-poppins text-slate-900 mb-8 border-b border-slate-100 pb-4 flex items-center gap-2">
-              <FileText className="w-5 h-5 text-red-500" />
-              Default Details
+        {/* Left - Inputs */}
+        <div className="w-full lg:w-[45%] flex flex-col gap-6">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200">
+            <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+              <span className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">1</span>
+              Transaction Details
             </h3>
-            
-            <div className="space-y-8">
+
+            <div className="space-y-6">
               
-              {/* TDS Amount */}
-              <div className="space-y-4">
-                <div className="flex justify-between items-center text-sm font-bold">
-                  <span className="text-slate-700">TDS Amount (Principal)</span>
-                  <div className="relative w-1/3 sm:w-1/2">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <span className="text-slate-400 font-bold">₹</span>
-                    </div>
-                    <input 
-                      type="number"
-                      value={tdsAmount || ''} 
-                      onChange={(e) => setTdsAmount(Number(e.target.value))}
-                      className="w-full pl-8 p-2 rounded-lg border-2 border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:border-red-500 focus:ring-4 focus:ring-red-500/20 outline-none text-right"
-                    />
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-700 block">TDS Amount (₹)</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <IndianRupee className="h-5 w-5 text-slate-400" />
                   </div>
+                  <input
+                    type="number"
+                    value={tdsAmount}
+                    onChange={(e) => setTdsAmount(e.target.value)}
+                    className="block w-full pl-11 pr-4 py-3.5 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all font-bold text-slate-900"
+                    placeholder="Total TDS Deducted"
+                  />
                 </div>
               </div>
 
-              {/* Delay Deduction */}
-              <div className="space-y-2">
-                <div className="flex justify-between items-center text-sm font-bold">
-                  <span className="text-slate-700">Delay in Deduction (Months)</span>
-                  <div className="relative w-1/4">
-                    <input 
-                      type="number"
-                      value={delayDeduction || ''} 
-                      onChange={(e) => setDelayDeduction(Number(e.target.value))}
-                      className="w-full pr-8 p-2 rounded-lg border-2 border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:border-red-500 outline-none text-right"
-                    />
-                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                      <span className="text-slate-400 text-xs font-bold">M</span>
+              {['late-deduction', 'all'].includes(tab) && (
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700 block">Date of Credit / Payment to Payee</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <Calendar className="h-5 w-5 text-slate-400" />
                     </div>
+                    <input
+                      type="date"
+                      value={creditDate}
+                      onChange={(e) => setCreditDate(e.target.value)}
+                      className="block w-full pl-11 pr-4 py-3.5 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all font-semibold text-slate-900"
+                    />
                   </div>
                 </div>
-                <p className="text-[10px] text-slate-500">Part of a month is considered as a full month (1% per month).</p>
-              </div>
+              )}
 
-              {/* Delay Payment */}
-              <div className="space-y-2">
-                <div className="flex justify-between items-center text-sm font-bold">
-                  <span className="text-slate-700">Delay in Payment (Months)</span>
-                  <div className="relative w-1/4">
-                    <input 
-                      type="number"
-                      value={delayPayment || ''} 
-                      onChange={(e) => setDelayPayment(Number(e.target.value))}
-                      className="w-full pr-8 p-2 rounded-lg border-2 border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:border-red-500 outline-none text-right"
-                    />
-                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                      <span className="text-slate-400 text-xs font-bold">M</span>
+              {['late-deduction', 'late-payment', 'all'].includes(tab) && (
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700 block">Date of TDS Deduction</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <Calendar className="h-5 w-5 text-slate-400" />
                     </div>
+                    <input
+                      type="date"
+                      value={deductionDate}
+                      onChange={(e) => setDeductionDate(e.target.value)}
+                      className="block w-full pl-11 pr-4 py-3.5 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all font-semibold text-slate-900"
+                    />
                   </div>
                 </div>
-                <p className="text-[10px] text-slate-500">Part of a month is considered as a full month (1.5% per month).</p>
-              </div>
+              )}
 
-              {/* Delay Filing */}
-              <div className="space-y-2">
-                <div className="flex justify-between items-center text-sm font-bold">
-                  <span className="text-slate-700">Delay in Filing Return (Days)</span>
-                  <div className="relative w-1/4">
-                    <input 
-                      type="number"
-                      value={delayFilingDays || ''} 
-                      onChange={(e) => setDelayFilingDays(Number(e.target.value))}
-                      className="w-full pr-8 p-2 rounded-lg border-2 border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:border-red-500 outline-none text-right"
-                    />
-                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                      <span className="text-slate-400 text-xs font-bold">D</span>
+              {['late-payment', 'all'].includes(tab) && (
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700 block">Date of TDS Payment to Govt</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <Calendar className="h-5 w-5 text-slate-400" />
                     </div>
+                    <input
+                      type="date"
+                      value={paymentDate}
+                      onChange={(e) => setPaymentDate(e.target.value)}
+                      className="block w-full pl-11 pr-4 py-3.5 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all font-semibold text-slate-900"
+                    />
                   </div>
                 </div>
-                <p className="text-[10px] text-slate-500">₹200 per day, capped at the total TDS amount.</p>
-              </div>
+              )}
+
+              {['late-filing', 'all'].includes(tab) && (
+                <>
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700 block">Due Date for TDS Return Filing</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Calendar className="h-5 w-5 text-slate-400" />
+                      </div>
+                      <input
+                        type="date"
+                        value={filingDueDate}
+                        onChange={(e) => setFilingDueDate(e.target.value)}
+                        className="block w-full pl-11 pr-4 py-3.5 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all font-semibold text-slate-900"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700 block">Actual Date of Filing Return</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Calendar className="h-5 w-5 text-slate-400" />
+                      </div>
+                      <input
+                        type="date"
+                        value={actualFilingDate}
+                        onChange={(e) => setActualFilingDate(e.target.value)}
+                        className="block w-full pl-11 pr-4 py-3.5 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all font-semibold text-slate-900"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
 
             </div>
           </div>
         </div>
 
-        {/* Right Column: Outputs */}
-        <div className="lg:col-span-6">
-          <div className="glass-card rounded-3xl p-8 sm:p-10 border-2 border-slate-200/90 shadow-xl bg-gradient-to-br from-slate-50 via-white to-red-50/30 h-full flex flex-col relative overflow-hidden">
-            
-            <h3 className="text-center text-sm font-bold uppercase tracking-widest text-slate-500 mb-6">
-              Penalty & Interest Summary
+        {/* Right - Results */}
+        <div className="w-full lg:w-[55%] flex flex-col gap-6 lg:sticky lg:top-24">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 h-full flex flex-col">
+            <h3 className="text-lg font-bold text-slate-900 mb-8 flex items-center gap-2">
+              <span className="w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center text-rose-600">2</span>
+              Calculation Result
             </h3>
 
-            <div className="flex-1 flex flex-col justify-center space-y-6">
-              
-              <div className="bg-white rounded-2xl p-6 border-2 border-red-100 shadow-sm space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-semibold text-slate-600">Original TDS Amount</span>
-                  <span className="font-mono font-bold text-slate-900">₹{formatINR(tdsAmount)}</span>
-                </div>
+            {!result ? (
+              <div className="flex-grow flex flex-col items-center justify-center text-slate-400 py-12">
+                <AlertTriangle className="w-16 h-16 opacity-20 mb-4" />
+                <p className="font-semibold">Enter details and dates to view statutory liability.</p>
+              </div>
+            ) : (
+              <div className="animate-fadeIn">
                 
-                <div className="pl-4 border-l-2 border-red-200 space-y-3 py-2 my-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-semibold text-slate-500">Late Deduction Interest (1%)</span>
-                    <span className="font-mono font-bold text-red-600">+ ₹{formatINR(interestLateDeduction)}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-semibold text-slate-500">Late Payment Interest (1.5%)</span>
-                    <span className="font-mono font-bold text-red-600">+ ₹{formatINR(interestLatePayment)}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <div className="flex flex-col">
-                      <span className="text-sm font-semibold text-slate-500">Late Filing Fee (₹200/day)</span>
-                      {lateFilingFeeRaw > tdsAmount && (
-                        <span className="text-[10px] text-emerald-600 font-bold">Capped at TDS Amount (Saved ₹{formatINR(lateFilingFeeRaw - tdsAmount)})</span>
-                      )}
+                {/* Result Highlights */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                  {['late-deduction', 'all'].includes(tab) && (
+                    <div className={`rounded-2xl p-4 border ${result.ldInterest > 0 ? 'bg-rose-50 border-rose-200' : 'bg-slate-50 border-slate-200'}`}>
+                      <p className={`text-xs font-bold mb-1 uppercase tracking-wider ${result.ldInterest > 0 ? 'text-rose-700' : 'text-slate-500'}`}>Late Deduction (1%)</p>
+                      <p className={`text-2xl font-black ${result.ldInterest > 0 ? 'text-rose-900' : 'text-slate-700'}`}>₹{result.ldInterest.toLocaleString('en-IN')}</p>
+                      {result.ldMonths > 0 && <p className="text-xs font-semibold text-slate-500 mt-1">{result.ldMonths} Months Delay</p>}
                     </div>
-                    <span className="font-mono font-bold text-red-600">+ ₹{formatINR(lateFilingFee)}</span>
+                  )}
+
+                  {['late-payment', 'all'].includes(tab) && (
+                    <div className={`rounded-2xl p-4 border ${result.lpInterest > 0 ? 'bg-rose-50 border-rose-200' : 'bg-slate-50 border-slate-200'}`}>
+                      <p className={`text-xs font-bold mb-1 uppercase tracking-wider ${result.lpInterest > 0 ? 'text-rose-700' : 'text-slate-500'}`}>Late Payment (1.5%)</p>
+                      <p className={`text-2xl font-black ${result.lpInterest > 0 ? 'text-rose-900' : 'text-slate-700'}`}>₹{result.lpInterest.toLocaleString('en-IN')}</p>
+                      {result.lpMonths > 0 && <p className="text-xs font-semibold text-slate-500 mt-1">{result.lpMonths} Months Delay</p>}
+                    </div>
+                  )}
+
+                  {['late-filing', 'all'].includes(tab) && (
+                    <div className={`rounded-2xl p-4 border ${result.lfFee > 0 ? 'bg-rose-50 border-rose-200' : 'bg-slate-50 border-slate-200'}`}>
+                      <p className={`text-xs font-bold mb-1 uppercase tracking-wider ${result.lfFee > 0 ? 'text-rose-700' : 'text-slate-500'}`}>Late Filing (234E)</p>
+                      <p className={`text-2xl font-black ${result.lfFee > 0 ? 'text-rose-900' : 'text-slate-700'}`}>₹{result.lfFee.toLocaleString('en-IN')}</p>
+                      {result.lfDays > 0 && <p className="text-xs font-semibold text-slate-500 mt-1">{result.lfDays} Days Delay</p>}
+                    </div>
+                  )}
+                </div>
+
+                {tab === 'all' && (
+                  <div className={`rounded-2xl p-6 mb-8 border shadow-sm ${result.totalLiability > 0 ? 'bg-rose-500 border-rose-600 text-white' : 'bg-emerald-500 border-emerald-600 text-white'}`}>
+                    <p className="text-sm font-bold opacity-90 mb-1">Total Liability Payable</p>
+                    <p className="text-2xl sm:text-4xl font-black tracking-tight">
+                      ₹{result.totalLiability.toLocaleString('en-IN')}
+                    </p>
                   </div>
+                )}
+
+                {result.totalLiability === 0 && (
+                  <div className="flex items-center gap-3 p-4 bg-emerald-50 text-emerald-800 rounded-xl border border-emerald-200 font-semibold mb-8">
+                    <CheckCircle className="w-5 h-5 flex-shrink-0" />
+                    No interest or late fee is applicable based on the entered dates.
+                  </div>
+                )}
+
+                {/* Info Note */}
+                <div className="bg-slate-50 rounded-xl p-5 border border-slate-200 text-sm font-medium text-slate-600 leading-relaxed space-y-2">
+                  <p><strong className="text-slate-900">References:</strong></p>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {['late-deduction', 'all'].includes(tab) && <li><strong>Late deduction (u/s 201(1A)):</strong> 1% per month from date of credit to date of deduction.</li>}
+                    {['late-payment', 'all'].includes(tab) && <li><strong>Late payment (u/s 201(1A)):</strong> 1.5% per month from date of deduction to actual payment. Due date is generally 7th of next month (or 30th April for March).</li>}
+                    {['late-filing', 'all'].includes(tab) && <li><strong>Late filing fee (u/s 234E):</strong> ₹200 per day capped at the total TDS amount.</li>}
+                    <li><strong>Important:</strong> As per IT Rules, part of a month is always counted as a full month for interest calculation.</li>
+                  </ul>
+                  {result.computedDueDate && (
+                    <p className="pt-2 font-bold text-indigo-700">Statutory Due Date for entered Deduction: {fmtDate(result.computedDueDate)}</p>
+                  )}
                 </div>
-                
-                <div className="flex justify-between items-center">
-                  <span className="font-bold text-red-800">Total Penalty & Interest</span>
-                  <span className="font-mono font-bold text-red-600">₹{formatINR(totalPenalty)}</span>
-                </div>
+
               </div>
-
-              <div className="text-center pt-4">
-                <p className="text-slate-500 font-bold text-sm mb-2">Total Amount Payable</p>
-                <div className="text-4xl sm:text-5xl font-mono font-extrabold tracking-tight text-slate-900">
-                  ₹{formatINR(totalPayable)}
-                </div>
-              </div>
-
-            </div>
-
-            <Link href="/?contact=tds" className="mt-8 w-full py-4 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-600 hover:to-yellow-600 text-slate-950 font-poppins font-extrabold text-sm sm:text-base shadow-xl shadow-amber-500/20 transform hover:-translate-y-1 transition-all flex items-center justify-center gap-2">
-              File Belated TDS Return with Experts
-            </Link>
-
+            )}
           </div>
         </div>
       </div>
-
     </div>
   );
 }

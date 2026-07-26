@@ -76,7 +76,7 @@ export default function ProcessSection({ onOpenModal }: ProcessSectionProps) {
  Seamless Execution Roadmap
  </p>
  <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-poppins text-slate-900">
- How We Work
+ How We <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600">Work</span>
  </h2>
  <p className="text-base sm:text-lg text-slate-600 font-inter">
  A frictionless 5-step workflow designed to save your time, eliminate paperwork confusion, and deliver rapid statutory compliance across India.
@@ -84,7 +84,7 @@ export default function ProcessSection({ onOpenModal }: ProcessSectionProps) {
  </div>
 
  {/* Animated SVG Roadmap */}
- <div className="relative mt-24 mb-16 w-full max-w-7xl mx-auto">
+ <div ref={stepsRef} className="relative mt-24 mb-16 w-full max-w-7xl mx-auto">
  <style dangerouslySetInnerHTML={{ __html:`
  @keyframes processBeam {
  from { stroke-dashoffset: 2400; }
@@ -155,60 +155,35 @@ export default function ProcessSection({ onOpenModal }: ProcessSectionProps) {
  </div>
 
  {/* Mobile Vertical Layout (<lg) */}
- <div className="block lg:hidden relative w-full h-[900px] max-w-sm mx-auto">
- <svg viewBox="0 0 300 1000" preserveAspectRatio="none" className="absolute inset-0 w-full h-full" fill="none">
- <path 
- d="M 150 50 C 150 150 50 150 50 250 C 50 350 250 350 250 500 C 250 650 50 650 50 750 C 50 850 150 850 150 950" 
- stroke="#1e293b" strokeWidth="40" strokeLinecap="round" vectorEffect="non-scaling-stroke" 
- />
- <path 
- d="M 150 50 C 150 150 50 150 50 250 C 50 350 250 350 250 500 C 250 650 50 650 50 750 C 50 850 150 850 150 950" 
- stroke="url(#mobile-gradient)" strokeWidth="20" strokeLinecap="round" vectorEffect="non-scaling-stroke" 
- className="animate-process-beam" style={{ strokeDasharray: '400, 2000' }}
- />
- <defs>
- <linearGradient id="mobile-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
- <stop offset="0%" stopColor="#f59e0b" stopOpacity="0" />
- <stop offset="50%" stopColor="#f59e0b" />
- <stop offset="100%" stopColor="#fbbf24" />
- </linearGradient>
- </defs>
- </svg>
+ <div className="block lg:hidden relative w-full max-w-md mx-auto px-2 sm:px-4 mt-8 mb-12">
+   {/* Vertical Line */}
+   <div className="absolute left-[2.25rem] sm:left-[3.25rem] top-8 bottom-8 w-1 bg-gradient-to-b from-amber-200 via-amber-400 to-amber-200 rounded-full opacity-50" />
 
- {PROCESS_STEPS.map((step, idx) => {
- const mobilePositions = [
- { left: '50%', top: '5%', labelPos: 'right' },
- { left: '16.66%', top: '25%', labelPos: 'right' },
- { left: '83.33%', top: '50%', labelPos: 'left' },
- { left: '16.66%', top: '75%', labelPos: 'right' },
- { left: '50%', top: '95%', labelPos: 'right' },
- ];
- const pos = mobilePositions[idx];
- const Icon = iconMap[step.iconName] || Send;
- const isRight = pos.labelPos === 'right';
+   <div className="space-y-6 sm:space-y-8 relative">
+     {PROCESS_STEPS.map((step, idx) => {
+       const Icon = iconMap[step.iconName] || Send;
+       const isVisible = !!stepVisible[idx]; 
 
- return (
- <div key={step.id} className="absolute transform -translate-x-1/2 -translate-y-1/2 z-10" style={{ left: pos.left, top: pos.top }}>
- <div className="relative group cursor-default">
- {/* Glowing Node */}
- <div className="w-12 h-12 rounded-full bg-slate-900 border-4 border-amber-500 flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.5)] z-20 relative">
- <Icon className="w-5 h-5 text-amber-500" strokeWidth={2.5} />
- </div>
- 
- {/* Tooltip Label */}
- <div className={`absolute top-1/2 -translate-y-1/2 flex items-center w-[180px] sm:w-[220px] opacity-95 ${isRight ? 'left-full pl-6' : 'right-full pr-6'}`}>
- <div className={`absolute top-1/2 -translate-y-1/2 w-6 h-0.5 border-t-2 border-dashed border-amber-500/50 ${isRight ? 'left-0' : 'right-0'}`} />
- 
- <div className={`bg-white/95 p-4 rounded-xl shadow-lg shadow-slate-200/50 border border-slate-200 flex flex-col ${isRight ? 'items-start text-left' : 'items-end text-right'}`}>
- <span className="text-[10px] font-black text-amber-600 uppercase tracking-wider mb-1">{step.subtitle}</span>
- <h3 className="text-sm font-extrabold text-slate-900 mb-1">{step.title}</h3>
- <p className="text-[11px] text-slate-600 leading-snug">{step.description}</p>
- </div>
- </div>
- </div>
- </div>
- );
- })}
+       return (
+         <div 
+           key={step.id} 
+           className={`relative flex items-center gap-4 sm:gap-6 transition-all duration-700 ease-out transform ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}
+         >
+           {/* Timeline Node */}
+           <div className="relative shrink-0 flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-slate-900 border-4 border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.5)] z-10 ml-2">
+             <Icon className="w-6 h-6 sm:w-7 sm:h-7 text-amber-500" strokeWidth={2.5} />
+           </div>
+
+           {/* Card */}
+           <div className="flex-1 bg-white/95 backdrop-blur-sm p-4 sm:p-6 rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-200 hover:border-amber-400 transition-colors">
+              <span className="text-[10px] sm:text-xs font-black text-amber-600 uppercase tracking-wider mb-1 block">{step.subtitle}</span>
+              <h3 className="text-base sm:text-lg font-extrabold text-slate-900 mb-1.5 leading-tight">{step.title}</h3>
+              <p className="text-xs sm:text-sm text-slate-600 leading-snug">{step.description}</p>
+           </div>
+         </div>
+       );
+     })}
+   </div>
  </div>
  </div>
 

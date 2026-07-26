@@ -91,13 +91,19 @@ export default function LeadershipSection({ onOpenModal }: LeadershipSectionProp
  {/* Avatar + Role Header */}
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-6 mb-6">
  <div className="flex items-center gap-4">
- <div className={`w-20 h-20 rounded-2xl ${bgColors[idx % bgColors.length]} border flex items-center justify-center text-2xl font-extrabold font-poppins ${accentColors[idx % accentColors.length]} shadow-sm relative shrink-0`}>
- {member.name.split(' ').map(n => n[0]).join('')}
- <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 border-2 border-white flex items-center justify-center" title="CA Finalist">
- <CheckCircle2 className="w-3.5 h-3.5 text-white stroke-[3]" />
- </span>
- </div>
- <div>
+              <div className={`w-28 h-28 sm:w-32 sm:h-32 rounded-3xl ${bgColors[idx % bgColors.length]} border flex items-center justify-center text-3xl font-extrabold font-poppins ${accentColors[idx % accentColors.length]} shadow-sm relative shrink-0`}>
+                <div className="w-full h-full rounded-3xl overflow-hidden flex items-center justify-center">
+                  {member.imageUrl ? (
+                    <img src={member.imageUrl} alt={member.name} className="w-full h-full object-cover object-top" />
+                  ) : (
+                    member.name.split(' ').map(n => n[0]).join('')
+                  )}
+                </div>
+                <span className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-emerald-500 border-[3px] border-white flex items-center justify-center z-10 shadow-sm" title="CA Finalist">
+                  <CheckCircle2 className="w-4 h-4 text-white stroke-[3]" />
+                </span>
+              </div>
+              <div className="flex-1">
  <h3 className={`text-xl font-bold font-poppins text-slate-900 group-hover:${accentColors[idx % accentColors.length]} transition-colors`}>
  {member.name}
  </h3>

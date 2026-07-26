@@ -1,208 +1,429 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Briefcase, Plus, Minus, AlertTriangle } from 'lucide-react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { ArrowLeft, Briefcase, Plus, X, PieChart, TrendingUp, AlertTriangle } from 'lucide-react';
+import { PieChart as RechartsPieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+
+type LineItem = {
+  id: string;
+  name: string;
+  amount: number | '';
+};
+
+type Category = {
+  id: string;
+  title: string;
+  type: 'asset' | 'liability';
+  items: LineItem[];
+};
+
+const generateId = () => Math.random().toString(36).substr(2, 9);
+
+const INITIAL_CATEGORIES: Category[] = [
+  {
+    id: 'fixed_assets',
+    title: 'Fixed Assets',
+    type: 'asset',
+    items: [
+      { id: generateId(), name: 'Residential Property', amount: '' },
+      { id: generateId(), name: 'Land / Plot', amount: '' },
+      { id: generateId(), name: 'Vehicle', amount: '' },
+    ]
+  },
+  {
+    id: 'financial_assets',
+    title: 'Financial Assets',
+    type: 'asset',
+    items: [
+      { id: generateId(), name: 'Mutual Funds', amount: '' },
+      { id: generateId(), name: 'Stocks / Shares', amount: '' },
+      { id: generateId(), name: 'PPF / EPF / NPS', amount: '' },
+      { id: generateId(), name: 'Fixed Deposits', amount: '' },
+    ]
+  },
+  {
+    id: 'liquid_assets',
+    title: 'Liquid Assets',
+    type: 'asset',
+    items: [
+      { id: generateId(), name: 'Bank Savings Account', amount: '' },
+      { id: generateId(), name: 'Cash in Hand', amount: '' },
+    ]
+  },
+  {
+    id: 'other_assets',
+    title: 'Other Assets',
+    type: 'asset',
+    items: [
+      { id: generateId(), name: 'Gold / Jewellery', amount: '' },
+      { id: generateId(), name: 'Life Insurance (Surrender Value)', amount: '' },
+    ]
+  },
+  {
+    id: 'secured_loans',
+    title: 'Secured Loans',
+    type: 'liability',
+    items: [
+      { id: generateId(), name: 'Home Loan', amount: '' },
+      { id: generateId(), name: 'Car Loan', amount: '' },
+    ]
+  },
+  {
+    id: 'unsecured_loans',
+    title: 'Unsecured Loans',
+    type: 'liability',
+    items: [
+      { id: generateId(), name: 'Personal Loan', amount: '' },
+      { id: generateId(), name: 'Credit Card Outstanding', amount: '' },
+    ]
+  },
+  {
+    id: 'other_liabilities',
+    title: 'Other Liabilities',
+    type: 'liability',
+    items: [
+      { id: generateId(), name: 'Loans from Friends/Family', amount: '' },
+    ]
+  }
+];
 
 export default function NetWorthCalculator() {
-  // Asset States
-  const [cash, setCash] = useState<number>(500000);
-  const [realEstate, setRealEstate] = useState<number>(8500000);
-  const [investments, setInvestments] = useState<number>(1500000);
-  const [gold, setGold] = useState<number>(500000);
+  const [clientName, setClientName] = useState<string>('');
+  const [asOnDate, setAsOnDate] = useState<string>('');
+  const [categories, setCategories] = useState<Category[]>(INITIAL_CATEGORIES);
 
-  // Liability States
-  const [homeLoan, setHomeLoan] = useState<number>(4500000);
-  const [personalLoan, setPersonalLoan] = useState<number>(0);
-  const [creditCard, setCreditCard] = useState<number>(50000);
-
-  const formatINR = (num: number) => {
-    return num.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+  const handleUpdateItem = (categoryId: string, itemId: string, field: 'name' | 'amount', value: string | number) => {
+    setCategories(prev => prev.map(cat => {
+      if (cat.id !== categoryId) return cat;
+      return {
+        ...cat,
+        items: cat.items.map(item => {
+          if (item.id !== itemId) return item;
+          return { ...item, [field]: value };
+        })
+      };
+    }));
   };
 
-  // Math Logic
-  const totalAssets = cash + realEstate + investments + gold;
-  const totalLiabilities = homeLoan + personalLoan + creditCard;
-  const netWorth = totalAssets - totalLiabilities;
+  const handleAddItem = (categoryId: string) => {
+    setCategories(prev => prev.map(cat => {
+      if (cat.id !== categoryId) return cat;
+      return {
+        ...cat,
+        items: [...cat.items, { id: generateId(), name: '', amount: '' }]
+      };
+    }));
+  };
 
-  // Chart Data
+  const handleRemoveItem = (categoryId: string, itemId: string) => {
+    setCategories(prev => prev.map(cat => {
+      if (cat.id !== categoryId) return cat;
+      return {
+        ...cat,
+        items: cat.items.filter(item => item.id !== itemId)
+      };
+    }));
+  };
+
+  // Calculations
+  const { totalAssets, totalLiabilities, netWorth, debtToAssetRatio } = useMemo(() => {
+    let assets = 0;
+    let liabilities = 0;
+
+    categories.forEach(cat => {
+      cat.items.forEach(item => {
+        const amt = Number(item.amount) || 0;
+        if (cat.type === 'asset') assets += amt;
+        if (cat.type === 'liability') liabilities += amt;
+      });
+    });
+
+    const ratio = assets > 0 ? (liabilities / assets) * 100 : 0;
+
+    return {
+      totalAssets: assets,
+      totalLiabilities: liabilities,
+      netWorth: assets - liabilities,
+      debtToAssetRatio: ratio
+    };
+  }, [categories]);
+
   const chartData = [
-    { name: 'Total Assets', value: totalAssets, color: '#10b981' }, // emerald
-    { name: 'Total Liabilities', value: totalLiabilities, color: '#ef4444' } // red
+    { name: 'Total Assets', value: totalAssets },
+    { name: 'Total Liabilities', value: totalLiabilities }
   ];
+  const COLORS = ['#10b981', '#ef4444']; // emerald-500, red-500
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-8 py-12">
-      {/* Back Button */}
-      <Link href="/#calculators" className="inline-flex items-center gap-2 text-amber-600 hover:text-amber-700 font-bold mb-8 transition-colors">
-        <ArrowLeft className="w-4 h-4" />
-        Back to Utilities Hub
-      </Link>
-
-      <div className="text-center mb-12">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-500/10 text-amber-500 mb-6 border border-amber-500/20">
-          <Briefcase className="w-8 h-8" />
+    <div className="min-h-screen py-12 px-4 sm:px-8 lg:px-12 xl:px-16 max-w-[1760px] mx-auto animate-fadeIn">
+      {/* Header */}
+      <div className="mb-10 flex flex-col gap-4">
+        <Link href="/?tab=finance#calculators" className="inline-flex items-center gap-2 text-amber-600 hover:text-amber-500 font-semibold text-sm transition-colors w-fit">
+          <ArrowLeft className="w-4 h-4" /> Back to Calculators
+        </Link>
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+          <div className="max-w-3xl">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
+                <Briefcase className="w-5 h-5 text-white" />
+              </div>
+              <h1 className="text-xl sm:text-3xl sm:text-4xl font-extrabold font-poppins text-slate-900 tracking-tight">
+                Net Worth Calculator
+              </h1>
+            </div>
+            <p className="text-slate-600 font-inter text-sm sm:text-base leading-relaxed">
+              Calculate your precise net worth by compiling your assets and liabilities. Ideal for loan applications, visa processes, or personal financial tracking.
+            </p>
+          </div>
         </div>
-        <h1 className="text-4xl sm:text-5xl font-extrabold font-poppins text-slate-900 tracking-tight mb-4">
-          Personal Net Worth <span className="text-amber-600">Calculator</span>
-        </h1>
-        <p className="text-base sm:text-lg text-slate-600 font-inter max-w-2xl mx-auto">
-          Calculate your true financial standing. Enter your assets and liabilities to instantly compute your net worth, often required for VISA applications or bank loans.
-        </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+      <div className="flex flex-col xl:flex-row gap-4 sm:gap-8 items-start">
         
-        {/* Left Column: Inputs */}
-        <div className="lg:col-span-6 space-y-6">
-          <div className="glass-card rounded-3xl p-8 border-2 border-emerald-200/90 shadow-xl bg-white mb-6">
-            <h3 className="text-xl font-bold font-poppins text-emerald-800 mb-6 border-b border-emerald-100 pb-4 flex items-center gap-2">
-              <Plus className="w-5 h-5" />
-              Your Assets (What you own)
+        {/* Left Column - Inputs */}
+        <div className="w-full xl:w-[60%] flex flex-col gap-6">
+          
+          {/* Metadata */}
+          <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-700 block">Name of Individual / Entity</label>
+                <input
+                  type="text"
+                  value={clientName}
+                  onChange={(e) => setClientName(e.target.value)}
+                  className="block w-full px-4 py-3 border border-slate-200 rounded-2xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all font-semibold text-slate-900"
+                  placeholder="e.g. John Doe"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-700 block">As On Date</label>
+                <input
+                  type="date"
+                  value={asOnDate}
+                  onChange={(e) => setAsOnDate(e.target.value)}
+                  className="block w-full px-4 py-3 border border-slate-200 rounded-2xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all font-semibold text-slate-900"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-emerald-50 rounded-3xl p-6 sm:p-8 border border-emerald-100 shadow-sm">
+            <h3 className="text-lg font-bold text-emerald-900 mb-6 flex items-center gap-2 uppercase tracking-wide">
+              Your Assets
             </h3>
-            <div className="space-y-4">
-              {[
-                { label: 'Cash & Bank Balances', value: cash, setter: setCash },
-                { label: 'Real Estate / Property', value: realEstate, setter: setRealEstate },
-                { label: 'Stocks, Mutual Funds & FDs', value: investments, setter: setInvestments },
-                { label: 'Gold & Jewelry', value: gold, setter: setGold },
-              ].map((item, idx) => (
-                <div key={idx} className="flex justify-between items-center text-sm font-bold">
-                  <span className="text-slate-700">{item.label}</span>
-                  <div className="relative w-1/2">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <span className="text-slate-400 font-bold">₹</span>
-                    </div>
-                    <input 
-                      type="number"
-                      value={item.value || ''} 
-                      onChange={(e) => item.setter(Number(e.target.value))}
-                      className="w-full pl-8 p-2 rounded-lg border-2 border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20 outline-none text-right transition-all"
-                    />
+            
+            <div className="space-y-8">
+              {categories.filter(c => c.type === 'asset').map(category => (
+                <div key={category.id} className="bg-white rounded-2xl p-5 border border-emerald-100/50">
+                  <h4 className="text-sm font-bold text-slate-700 mb-4 border-b border-slate-100 pb-2">{category.title}</h4>
+                  
+                  <div className="space-y-3">
+                    {category.items.map((item, index) => (
+                      <div key={item.id} className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                        <div className="flex-grow w-full sm:w-auto">
+                          <input
+                            type="text"
+                            value={item.name}
+                            onChange={(e) => handleUpdateItem(category.id, item.id, 'name', e.target.value)}
+                            placeholder="Asset Name"
+                            className="block w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-sm font-medium text-slate-900 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                          />
+                        </div>
+                        <div className="w-full sm:w-48 relative flex-shrink-0">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span className="text-slate-400 font-medium text-sm">₹</span>
+                          </div>
+                          <input
+                            type="number"
+                            value={item.amount}
+                            onChange={(e) => handleUpdateItem(category.id, item.id, 'amount', e.target.value ? Number(e.target.value) : '')}
+                            placeholder="0"
+                            className="block w-full pl-8 pr-3 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                          />
+                        </div>
+                        <button
+                          onClick={() => handleRemoveItem(category.id, item.id)}
+                          className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors self-end sm:self-auto"
+                          title="Remove item"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
                   </div>
+                  
+                  <button
+                    onClick={() => handleAddItem(category.id)}
+                    className="mt-4 flex items-center gap-1.5 text-xs font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Add {category.title}
+                  </button>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="glass-card rounded-3xl p-8 border-2 border-red-200/90 shadow-xl bg-white">
-            <h3 className="text-xl font-bold font-poppins text-red-800 mb-6 border-b border-red-100 pb-4 flex items-center gap-2">
-              <Minus className="w-5 h-5" />
-              Your Liabilities (What you owe)
+          <div className="bg-rose-50 rounded-3xl p-6 sm:p-8 border border-rose-100 shadow-sm">
+            <h3 className="text-lg font-bold text-rose-900 mb-6 flex items-center gap-2 uppercase tracking-wide">
+              Your Liabilities
             </h3>
-            <div className="space-y-4">
-              {[
-                { label: 'Home Loan Balance', value: homeLoan, setter: setHomeLoan },
-                { label: 'Personal / Car Loans', value: personalLoan, setter: setPersonalLoan },
-                { label: 'Credit Card Outstanding', value: creditCard, setter: setCreditCard },
-              ].map((item, idx) => (
-                <div key={idx} className="flex justify-between items-center text-sm font-bold">
-                  <span className="text-slate-700">{item.label}</span>
-                  <div className="relative w-1/2">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <span className="text-slate-400 font-bold">₹</span>
-                    </div>
-                    <input 
-                      type="number"
-                      value={item.value || ''} 
-                      onChange={(e) => item.setter(Number(e.target.value))}
-                      className="w-full pl-8 p-2 rounded-lg border-2 border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:border-red-500 focus:ring-4 focus:ring-red-500/20 outline-none text-right transition-all"
-                    />
+            
+            <div className="space-y-8">
+              {categories.filter(c => c.type === 'liability').map(category => (
+                <div key={category.id} className="bg-white rounded-2xl p-5 border border-rose-100/50">
+                  <h4 className="text-sm font-bold text-slate-700 mb-4 border-b border-slate-100 pb-2">{category.title}</h4>
+                  
+                  <div className="space-y-3">
+                    {category.items.map((item, index) => (
+                      <div key={item.id} className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                        <div className="flex-grow w-full sm:w-auto">
+                          <input
+                            type="text"
+                            value={item.name}
+                            onChange={(e) => handleUpdateItem(category.id, item.id, 'name', e.target.value)}
+                            placeholder="Liability Name"
+                            className="block w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-sm font-medium text-slate-900 focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none"
+                          />
+                        </div>
+                        <div className="w-full sm:w-48 relative flex-shrink-0">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span className="text-slate-400 font-medium text-sm">₹</span>
+                          </div>
+                          <input
+                            type="number"
+                            value={item.amount}
+                            onChange={(e) => handleUpdateItem(category.id, item.id, 'amount', e.target.value ? Number(e.target.value) : '')}
+                            placeholder="0"
+                            className="block w-full pl-8 pr-3 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none"
+                          />
+                        </div>
+                        <button
+                          onClick={() => handleRemoveItem(category.id, item.id)}
+                          className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors self-end sm:self-auto"
+                          title="Remove item"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
                   </div>
+                  
+                  <button
+                    onClick={() => handleAddItem(category.id)}
+                    className="mt-4 flex items-center gap-1.5 text-xs font-bold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Add {category.title}
+                  </button>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Right Column: Outputs */}
-        <div className="lg:col-span-6">
-          <div className="glass-card rounded-3xl p-8 sm:p-10 border-2 border-slate-200/90 shadow-xl bg-gradient-to-br from-slate-50 via-white to-amber-50/30 h-full flex flex-col relative overflow-hidden">
+        {/* Right Column - Results */}
+        <div className="w-full xl:w-[40%] flex flex-col gap-6 xl:sticky xl:top-24">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 h-full flex flex-col relative overflow-hidden">
             
-            <h3 className="text-center text-sm font-bold uppercase tracking-widest text-slate-500 mb-6">
-              Net Worth Statement
+            {/* Background flourish */}
+            <div className="absolute -top-24 -right-24 w-64 h-64 bg-amber-50 rounded-full blur-3xl opacity-60 pointer-events-none" />
+
+            <h3 className="text-lg font-bold text-slate-900 mb-8 flex items-center gap-2 relative z-10">
+              <span className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
+                <TrendingUp className="w-4 h-4" />
+              </span>
+              Net Worth Summary
             </h3>
 
-            <div className="flex-1 flex flex-col justify-center">
-              
-              {/* Highlight Box */}
-              <div className="text-center mb-10">
-                <p className="text-slate-500 font-bold text-sm mb-2">Your Total Net Worth</p>
-                <div className={`text-4xl sm:text-6xl font-mono font-extrabold tracking-tight ${netWorth >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                  ₹{formatINR(netWorth)}
-                </div>
-              </div>
+            {/* Main Result */}
+            <div className={`rounded-2xl p-6 mb-6 border relative z-10 shadow-sm ${
+              netWorth >= 0 
+                ? 'bg-amber-500 border-amber-600 text-white' 
+                : 'bg-red-500 border-red-600 text-white'
+            }`}>
+              <p className="text-sm font-bold opacity-90 mb-1">Total Net Worth</p>
+              <p className="text-2xl sm:text-4xl font-black tracking-tight">
+                {netWorth < 0 ? '-' : ''}₹{Math.abs(netWorth).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+              </p>
+            </div>
 
-              {/* Chart & Details */}
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-8 mb-8">
-                
-                {/* Donut Chart */}
-                <div className="w-48 h-48 relative">
+            {/* Assets & Liabilities Summary */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 relative z-10">
+              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200">
+                <p className="text-xs text-slate-500 font-bold mb-1 uppercase tracking-wider">Total Assets</p>
+                <p className="text-xl font-bold text-emerald-600">
+                  ₹{totalAssets.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                </p>
+              </div>
+              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200">
+                <p className="text-xs text-slate-500 font-bold mb-1 uppercase tracking-wider">Total Liabilities</p>
+                <p className="text-xl font-bold text-rose-600">
+                  ₹{totalLiabilities.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                </p>
+              </div>
+            </div>
+
+            {/* Debt to Asset Ratio */}
+            <div className={`rounded-2xl p-4 mb-8 border relative z-10 flex items-start gap-3 ${
+              debtToAssetRatio > 60 
+                ? 'bg-rose-50 border-rose-200 text-rose-900' 
+                : debtToAssetRatio > 40
+                  ? 'bg-amber-50 border-amber-200 text-amber-900'
+                  : 'bg-emerald-50 border-emerald-200 text-emerald-900'
+            }`}>
+              <AlertTriangle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
+                debtToAssetRatio > 60 ? 'text-rose-500' : debtToAssetRatio > 40 ? 'text-amber-500' : 'text-emerald-500'
+              }`} />
+              <div>
+                <p className="text-sm font-bold mb-0.5">Debt-to-Asset Ratio: {debtToAssetRatio.toFixed(1)}%</p>
+                <p className="text-xs font-medium opacity-80 leading-relaxed">
+                  {debtToAssetRatio > 60 
+                    ? 'High financial risk. Liabilities exceed 60% of assets.' 
+                    : debtToAssetRatio > 40
+                      ? 'Moderate risk. Consider reducing debt to improve financial health.'
+                      : 'Healthy ratio. Your assets comfortably cover your liabilities.'}
+                </p>
+              </div>
+            </div>
+
+            {/* Pie Chart */}
+            <div className="flex-grow flex flex-col items-center justify-center min-h-[250px] relative z-10">
+              {totalAssets > 0 || totalLiabilities > 0 ? (
+                <div className="w-full h-64">
                   <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
+                    <RechartsPieChart>
                       <Pie
                         data={chartData}
                         cx="50%"
                         cy="50%"
                         innerRadius={60}
-                        outerRadius={80}
-                        paddingAngle={5}
+                        outerRadius={90}
+                        paddingAngle={2}
                         dataKey="value"
-                        stroke="none"
                       >
                         {chartData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
                       <Tooltip 
-                        formatter={(value: any) => `₹${formatINR(value)}`}
-                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                        formatter={(value: any) => `₹${Number(value).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
+                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }}
                       />
-                    </PieChart>
+                      <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                    </RechartsPieChart>
                   </ResponsiveContainer>
                 </div>
-
-                {/* Legend & Breakdown */}
-                <div className="flex-1 space-y-4 w-full">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
-                      <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-                      Total Assets
-                    </div>
-                    <div className="text-xl font-mono font-bold text-emerald-600 pl-5">
-                      ₹{formatINR(totalAssets)}
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
-                      <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                      Total Liabilities
-                    </div>
-                    <div className="text-xl font-mono font-bold text-red-600 pl-5">
-                      - ₹{formatINR(totalLiabilities)}
-                    </div>
-                  </div>
+              ) : (
+                <div className="flex flex-col items-center text-slate-400">
+                  <PieChart className="w-16 h-16 opacity-20 mb-3" />
+                  <p className="text-sm font-medium">Add amounts to see breakdown</p>
                 </div>
-              </div>
-
+              )}
             </div>
-
-            <Link href="/?contact=networth" className="w-full py-4 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-600 hover:to-yellow-600 text-slate-950 font-poppins font-extrabold text-sm sm:text-base shadow-xl shadow-amber-500/20 transform hover:-translate-y-1 transition-all flex items-center justify-center gap-2">
-              Get CA Certified Net Worth Certificate
-            </Link>
 
           </div>
         </div>
-      </div>
-
-      {/* Disclaimer */}
-      <div className="mt-12 p-6 bg-white/50 border border-slate-200 rounded-2xl text-xs text-slate-500 flex items-start gap-3">
-        <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />
-        <p>
-          <strong className="text-slate-700">Disclaimer:</strong> This tool provides an uncertified estimation of your net worth based on user inputs. For VISA applications, bank loans, and official franchising requirements, a formally drafted Net Worth Certificate signed and attested by a practicing Chartered Accountant is mandatory. We provide this service across India.
-        </p>
       </div>
 
     </div>
