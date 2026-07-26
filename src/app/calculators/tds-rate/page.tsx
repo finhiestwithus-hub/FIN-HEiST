@@ -192,7 +192,7 @@ export default function TdsTcsCalculator() {
         <div className="w-full lg:w-64 bg-slate-50 border-r border-slate-100 p-6 flex flex-col gap-6">
           <h3 className="font-bold text-slate-900 uppercase tracking-wider text-xs mb-2">Calculator Steps</h3>
           
-          <div className={`flex items-center gap-3 ${step >= 1 ? 'text-indigo-600' : 'text-slate-400'}`}>
+          <div onClick={() => setStep(1)} className={`flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity ${step >= 1 ? 'text-indigo-600' : 'text-slate-400'}`}>
             <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step === 1 ? 'bg-indigo-600 text-white shadow-md' : step > 1 ? 'bg-indigo-100' : 'bg-slate-200'}`}>
               {step > 1 ? <CheckCircle className="w-4 h-4" /> : '1'}
             </div>
@@ -201,7 +201,7 @@ export default function TdsTcsCalculator() {
 
           <div className={`w-0.5 h-8 ml-4 ${step > 1 ? 'bg-indigo-200' : 'bg-slate-200'}`} />
 
-          <div className={`flex items-center gap-3 ${step >= 2 ? 'text-indigo-600' : 'text-slate-400'}`}>
+          <div onClick={() => { if(step >= 2) setStep(2); }} className={`flex items-center gap-3 ${step >= 2 ? 'cursor-pointer hover:opacity-80 transition-opacity text-indigo-600' : 'text-slate-400 cursor-not-allowed'}`}>
             <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step === 2 ? 'bg-indigo-600 text-white shadow-md' : step > 2 ? 'bg-indigo-100' : 'bg-slate-200'}`}>
               {step > 2 ? <CheckCircle className="w-4 h-4" /> : '2'}
             </div>
@@ -353,7 +353,7 @@ export default function TdsTcsCalculator() {
                 <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
                   Step 2: Enter Details
                 </h2>
-                <button onClick={resetCalculator} className="text-sm font-bold text-slate-400 hover:text-slate-600">Change Payment Type</button>
+                <button onClick={() => setStep(1)} className="text-sm font-bold text-slate-400 hover:text-slate-600">Change Payment Type</button>
               </div>
 
               {/* Selected Details Card */}
