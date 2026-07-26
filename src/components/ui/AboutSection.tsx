@@ -10,6 +10,9 @@ interface AboutSectionProps {
 export default function AboutSection({ onOpenModal }: AboutSectionProps) {
     return (
         <section id="about" className="py-16 lg:py-24 bg-mesh-soft border-t border-slate-200/80 relative overflow-hidden scroll-mt-24">
+            {/* Top Gold Accent Strip */}
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 animate-gradient-shift" />
+
             <div className="max-w-[1400px] mx-auto px-4 sm:px-8 relative z-10">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
                     
