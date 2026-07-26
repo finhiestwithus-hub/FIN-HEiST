@@ -54,13 +54,28 @@ export default function FloatingWidgets({ isModalOpen, setIsModalOpen, selectedS
  }
  }, [selectedService, profile]);
 
- // Toggle dark mode class on document element
+ // Initialize dark mode from localStorage or system preference
  useEffect(() => {
- if (isDarkMode) {
- document.documentElement.classList.add('dark');
- } else {
- document.documentElement.classList.remove('dark');
- }
+   const savedTheme = localStorage.getItem('theme');
+   if (savedTheme === 'dark') {
+     setIsDarkMode(true);
+   } else if (savedTheme === 'light') {
+     setIsDarkMode(false);
+   } else {
+     // Default to false if nothing is set
+     setIsDarkMode(false);
+   }
+ }, []);
+
+ // Toggle dark mode class on document element and save preference
+ useEffect(() => {
+   if (isDarkMode) {
+     document.documentElement.classList.add('dark');
+     localStorage.setItem('theme', 'dark');
+   } else {
+     document.documentElement.classList.remove('dark');
+     localStorage.setItem('theme', 'light');
+   }
  }, [isDarkMode]);
 
  const scrollToTop = () => {
@@ -209,18 +224,18 @@ export default function FloatingWidgets({ isModalOpen, setIsModalOpen, selectedS
 
  {/* 3. Global Consultation Booking Modal */}
  {isModalOpen && (
- <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/65 backdrop-blur-md animate-fadeIn">
- <div className="relative w-full max-w-xl bg-gradient-to-br from-white via-slate-50 to-[#FCFBFA] border-2 border-slate-200/90 rounded-3xl shadow-[0_25px_80px_-15px_rgba(245,158,11,0.3)] overflow-hidden">
+ <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/65 backdrop-blur-md animate-fadeIn">
+ <div className="relative w-full max-w-xl max-h-[95vh] flex flex-col bg-gradient-to-br from-white via-slate-50 to-[#FCFBFA] border-2 border-slate-200/90 rounded-2xl sm:rounded-3xl shadow-[0_25px_80px_-15px_rgba(245,158,11,0.3)] overflow-hidden">
  
  {/* Modal Header */}
- <div className="bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-7 py-5.5 border-b border-amber-300 flex items-center justify-between shadow-xs">
+ <div className="bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-4 py-4 sm:px-7 sm:py-5.5 border-b border-amber-300 flex items-start sm:items-center justify-between shadow-xs shrink-0">
  <div className="flex items-center gap-3.5">
- <div className="w-11 h-11 rounded-2xl bg-slate-950/15 border border-slate-950/25 flex items-center justify-center text-slate-950 font-extrabold shadow-2xs">
+ <div className="hidden sm:flex w-11 h-11 rounded-2xl bg-slate-950/15 border border-slate-950/25 items-center justify-center text-slate-950 font-extrabold shadow-2xs shrink-0">
  <Calendar className="w-6 h-6 stroke-[2.4]" />
  </div>
  <div>
- <h3 className="text-xl sm:text-2xl font-extrabold font-poppins text-slate-950 tracking-tight">Book Free Consultation</h3>
- <p className="text-xs sm:text-sm text-slate-900/90 font-semibold font-inter mt-0.5">Direct consultation with CA Finalist & Compliance Team</p>
+ <h3 className="text-lg sm:text-2xl font-extrabold font-poppins tracking-tight" style={{ color: '#0f172a' }}>Book Free Consultation</h3>
+ <p className="text-[10px] sm:text-sm font-semibold font-inter mt-0.5 leading-tight" style={{ color: '#1e293b' }}>Direct consultation with CA Finalist & Compliance Team</p>
  </div>
  </div>
  <button
@@ -233,15 +248,15 @@ export default function FloatingWidgets({ isModalOpen, setIsModalOpen, selectedS
  </div>
 
  {/* Modal Content */}
- <div className="p-7 sm:p-8">
+ <div className="p-4 sm:p-7 overflow-y-auto">
  {isSubmitted ? (
  <div className="py-12 text-center flex flex-col items-center justify-center space-y-4 animate-fadeIn">
  <div className="w-16 h-16 rounded-full bg-emerald-100 border-2 border-emerald-500 flex items-center justify-center text-emerald-600 shadow-md">
  <CheckCircle className="w-10 h-10" />
  </div>
- <h4 className="text-2xl font-extrabold font-poppins text-slate-900">Consultation Request Received!</h4>
+ <h4 className="text-2xl font-extrabold font-poppins text-slate-900 dark:text-slate-900">Consultation Request Received!</h4>
  <p className="text-sm text-slate-600 max-w-sm font-medium leading-relaxed">
- Thank you, <span className="text-emerald-700 font-bold">{formData.fullName}</span>. Our CA specialist will call or WhatsApp you at <span className="text-slate-900 font-bold">{formData.phone}</span> within 2 hours.
+ Thank you, <span className="text-emerald-700 font-bold">{formData.fullName}</span>. Our CA specialist will call or WhatsApp you at <span className="text-slate-900 dark:text-slate-900 font-bold">{formData.phone}</span> within 2 hours.
  </p>
  <div className="pt-4 flex flex-wrap gap-3.5 justify-center w-full">
  <button
@@ -266,9 +281,9 @@ export default function FloatingWidgets({ isModalOpen, setIsModalOpen, selectedS
  </div>
  )}
 
- <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
  <div>
- <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-700 font-poppins mb-1.5">
+ <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-700 font-poppins mb-1.5">
  Full Name *
  </label>
  <input
@@ -277,11 +292,11 @@ export default function FloatingWidgets({ isModalOpen, setIsModalOpen, selectedS
  placeholder="e.g. Rajesh Sharma"
  value={formData.fullName}
  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
- className="w-full px-4 py-3 rounded-2xl bg-white border-2 border-slate-200 text-slate-900 placeholder-slate-400 font-medium text-sm focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 transition-all shadow-2xs"
+ className="w-full px-4 py-3 rounded-2xl bg-white border-2 border-slate-200 text-slate-900 dark:text-slate-900 placeholder-slate-400 font-medium text-sm focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 transition-all shadow-2xs" style={{ backgroundColor: "#ffffff", color: "#0f172a" }}
  />
  </div>
  <div>
- <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-700 font-poppins mb-1.5">
+ <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-700 font-poppins mb-1.5">
  Phone / WhatsApp *
  </label>
  <input
@@ -290,20 +305,20 @@ export default function FloatingWidgets({ isModalOpen, setIsModalOpen, selectedS
  placeholder="+91 98765 43210"
  value={formData.phone}
  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
- className="w-full px-4 py-3 rounded-2xl bg-white border-2 border-slate-200 text-slate-900 placeholder-slate-400 font-medium text-sm focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 transition-all shadow-2xs"
+ className="w-full px-4 py-3 rounded-2xl bg-white border-2 border-slate-200 text-slate-900 dark:text-slate-900 placeholder-slate-400 font-medium text-sm focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 transition-all shadow-2xs" style={{ backgroundColor: "#ffffff", color: "#0f172a" }}
  />
  </div>
  </div>
 
- <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
  <div>
- <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-700 font-poppins mb-1.5">
+ <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-700 font-poppins mb-1.5">
  Client Category
  </label>
  <select
  value={formData.clientType}
  onChange={(e) => setFormData({ ...formData, clientType: e.target.value })}
- className="w-full px-4 py-3 rounded-2xl bg-white border-2 border-slate-200 text-slate-900 font-medium text-sm focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 transition-all shadow-2xs"
+ className="w-full px-4 py-3 rounded-2xl bg-white border-2 border-slate-200 text-slate-900 dark:text-slate-900 font-medium text-sm focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 transition-all shadow-2xs" style={{ backgroundColor: "#ffffff", color: "#0f172a" }}
  >
  <option value="Business Owner">Business Owner / Company</option>
  <option value="Salaried Individual">Salaried Individual / IT Professional</option>
@@ -314,13 +329,13 @@ export default function FloatingWidgets({ isModalOpen, setIsModalOpen, selectedS
  </select>
  </div>
  <div>
- <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-700 font-poppins mb-1.5">
+ <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-700 font-poppins mb-1.5">
  Service Required
  </label>
  <select
  value={formData.service}
  onChange={(e) => setFormData({ ...formData, service: e.target.value })}
- className="w-full px-4 py-3 rounded-2xl bg-white border-2 border-slate-200 text-slate-900 font-medium text-sm focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 transition-all shadow-2xs"
+ className="w-full px-4 py-3 rounded-2xl bg-white border-2 border-slate-200 text-slate-900 dark:text-slate-900 font-medium text-sm focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 transition-all shadow-2xs" style={{ backgroundColor: "#ffffff", color: "#0f172a" }}
  >
  <option value="Income Tax Return & Advisory">Income Tax Return & Advisory</option>
  <option value="GST Registration & Filing">GST Registration & Filing</option>
@@ -339,13 +354,13 @@ export default function FloatingWidgets({ isModalOpen, setIsModalOpen, selectedS
  </div>
 
  <div>
- <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-700 font-poppins mb-1.5">
+ <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-700 font-poppins mb-1.5">
  Preferred Call Time
  </label>
  <select
  value={formData.preferredTime}
  onChange={(e) => setFormData({ ...formData, preferredTime: e.target.value })}
- className="w-full px-4 py-3 rounded-2xl bg-white border-2 border-slate-200 text-slate-900 font-medium text-sm focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 transition-all shadow-2xs"
+ className="w-full px-4 py-3 rounded-2xl bg-white border-2 border-slate-200 text-slate-900 dark:text-slate-900 font-medium text-sm focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 transition-all shadow-2xs" style={{ backgroundColor: "#ffffff", color: "#0f172a" }}
  >
  <option value="Immediate (Within 2 Hours)">Immediate (Within 2 Hours)</option>
  <option value="Morning (10:00 AM - 1:00 PM)">Morning (10:00 AM - 1:00 PM)</option>
@@ -355,7 +370,7 @@ export default function FloatingWidgets({ isModalOpen, setIsModalOpen, selectedS
  </div>
 
  <div>
- <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-700 font-poppins mb-1.5">
+ <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-700 font-poppins mb-1.5">
  Brief Requirement Details (Optional)
  </label>
  <textarea
@@ -363,7 +378,7 @@ export default function FloatingWidgets({ isModalOpen, setIsModalOpen, selectedS
  placeholder="E.g. Need ITR filing for salaried income plus intraday stock capital gains..."
  value={formData.notes}
  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
- className="w-full px-4 py-2.5 rounded-2xl bg-white border-2 border-slate-200 text-slate-900 placeholder-slate-400 font-medium text-sm focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 transition-all shadow-2xs"
+ className="w-full px-4 py-2.5 rounded-2xl bg-white border-2 border-slate-200 text-slate-900 dark:text-slate-900 placeholder-slate-400 font-medium text-sm focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 transition-all shadow-2xs" style={{ backgroundColor: "#ffffff", color: "#0f172a" }}
  />
  </div>
 
@@ -398,7 +413,7 @@ export default function FloatingWidgets({ isModalOpen, setIsModalOpen, selectedS
  </div>
 
  {/* Modal Footer Trust Banner */}
- <div className="px-7 py-3.5 bg-slate-100/90 border-t border-slate-200/90 flex items-center justify-between text-xs font-bold text-slate-600 font-inter">
+ <div className="px-4 py-3 sm:px-7 sm:py-3.5 bg-slate-100/90 border-t border-slate-200/90 flex flex-col sm:flex-row items-center justify-between gap-1 text-[10px] sm:text-xs font-bold text-slate-600 font-inter shrink-0">
  <span className="flex items-center gap-1.5 text-emerald-700">
  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
  100% Confidential Data

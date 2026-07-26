@@ -165,8 +165,8 @@ export default function ContactSection({ onOpenModal }: ContactSectionProps) {
                         {/* Instagram Social Badge */}
                         <div className="p-5 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 flex items-center justify-between">
                             <div>
-                                <span className="text-xs font-bold text-purple-600 block uppercase tracking-wider">Follow Our Daily Tax Tips</span>
-                                <span className="text-base font-bold text-slate-900 font-poppins">{COMPANY_INFO.instagram}</span>
+                                <span className="text-xs font-bold block uppercase tracking-wider" style={{ color: '#9333ea' }}>Follow Our Daily Tax Tips</span>
+                                <span className="text-base font-bold font-poppins" style={{ color: '#0f172a' }}>{COMPANY_INFO.instagram}</span>
                             </div>
                             <a
                                 href={COMPANY_INFO.instagramUrl}
