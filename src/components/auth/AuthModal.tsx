@@ -99,7 +99,7 @@ export default function AuthModal() {
                 {authModalMode === 'login' ? 'Admin Sign In' : authModalMode === 'forgot-password' ? 'Reset Password' : 'Set New Password'}
               </h3>
               <p className="text-xs text-slate-900/90 font-semibold font-inter mt-0.5">
-                {authModalMode === 'login' ? 'Access your consultation dashboard & CA feed' : authModalMode === 'forgot-password' ? 'Enter your email to receive a reset link' : 'Please enter your new secure password'}
+                {authModalMode === 'login' ? 'Access your consultation dashboard ' : authModalMode === 'forgot-password' ? 'Enter your email to receive a reset link' : 'Please enter your new secure password'}
               </p>
             </div>
           </div>
