@@ -43,6 +43,21 @@ export default function LeadershipSection({ onOpenModal }: LeadershipSectionProp
  }, () => setAdvisorVisible([]));
  }, []);
 
+  const handleEmailClick = (e: React.MouseEvent<HTMLAnchorElement>, email: string) => {
+    e.preventDefault();
+    const subject = encodeURIComponent("Consultation Inquiry");
+    const body = encodeURIComponent("Hi FIN-HEIST Team,\n\nI would like to schedule a consultation regarding my financial and compliance requirements.\n\nThanks,");
+    
+    // Check if user is on a mobile device
+    const isMobile = typeof window !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+      window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+    } else {
+      window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${email}&su=${subject}&body=${body}`, '_blank');
+    }
+  };
+
  return (
  <section id="leadership" className="py-24 bg-mesh-soft border-t border-slate-200/80 relative overflow-hidden scroll-mt-24">
  {/* Top strip */}
@@ -127,15 +142,16 @@ export default function LeadershipSection({ onOpenModal }: LeadershipSectionProp
  <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 10.9v8.37H9.2v-8.37H6.46M7.83 6.67a1.6 1.6 0 0 0-1.6 1.6 1.6 1.6 0 0 0 1.6 1.6 1.6 1.6 0 0 0 1.6-1.6 1.6 1.6 0 0 0-1.6-1.6Z" />
  </svg>
  </a>
- {member.email && (
- <a
- href={`mailto:${member.email}`}
- className="p-2.5 rounded-xl bg-slate-100 hover:bg-emerald-600 text-slate-600 hover:text-white transition-all border border-slate-200"
- title={`Email: ${member.name}`}
- >
- <Mail className="w-4 h-4" />
- </a>
- )}
+                {member.email && (
+                  <a
+                    href="#"
+                    onClick={(e) => handleEmailClick(e, member.email!)}
+                    className="p-2.5 rounded-xl bg-slate-100 hover:bg-emerald-600 text-slate-600 hover:text-white transition-all border border-slate-200"
+                    title={`Email: ${member.name}`}
+                  >
+                    <Mail className="w-4 h-4" />
+                  </a>
+                )}
  </div>
  </div>
 

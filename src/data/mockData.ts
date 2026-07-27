@@ -482,7 +482,7 @@ export const TEAM_MEMBERS: TeamMember[] = [
     expertise: ['Income Tax Filings', 'GST Compliance', 'Financial Documentation', 'Project Reports & Bank Loans', 'Regulatory Advisory'],
     bio: 'Vineet Choudhary is a CA Finalist with practical experience in taxation, GST, accounting, audit support, financial reporting, and business compliance. He has worked extensively on income tax filings, GST compliance, financial documentation, project reports, bank loan documentation, and regulatory advisory for individuals and MSMEs. His client-focused approach emphasizes practical solutions, transparency, and timely execution.',
     imageUrl: '/images/vineet.jpeg',
-    linkedin: 'https://linkedin.com/company/fin-heist',
+    linkedin: 'https://www.linkedin.com/in/vineetkumar27?utm_source=share_via&utm_content=profile&utm_medium=member_ios',
     email: 'finhiestwithus@gmail.com',
     isAdvisory: false
   },
@@ -495,7 +495,7 @@ export const TEAM_MEMBERS: TeamMember[] = [
     expertise: ['Accounting & Tally', 'Direct & Indirect Taxation', 'Statutory Audit Support', 'Financial Reporting', 'Business Advisory'],
     bio: ' Anshika Sahu is a CA Finalist with a strong academic background in Commerce and Finance. She specializes in accounting, taxation, statutory compliance, financial reporting, and business advisory services. With a detail-oriented approach and commitment to excellence, she assists individuals, startups, and businesses in meeting their financial and regulatory requirements efficiently.',
     imageUrl: '/images/anshika.jpeg',
-    linkedin: 'https://linkedin.com/company/fin-heist',
+    linkedin: 'https://www.linkedin.com/in/anshika-sahu-b62a30363?utm_source=share_via&utm_content=profile&utm_medium=member_android',
     email: 'finhiestwithus@gmail.com',
     isAdvisory: false
   },

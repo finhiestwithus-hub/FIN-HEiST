@@ -108,10 +108,10 @@ export default function IncomeTaxCalculator() {
     // Standard deduction New: 75,000
     const sdNew = Math.min(p_salary, 75000);
     const netSalaryNew = Math.max(0, p_salary - sdNew);
-    
+
     // Home loan let-out max setoff against other heads is 2L in total, but in New Regime, NO setoff of house property loss against other heads.
     // HP Income = Rental (30% ded) - Interest
-    let hpIncomeNew = netRental - p_hlLetout; 
+    let hpIncomeNew = netRental - p_hlLetout;
     if (hpIncomeNew < 0) hpIncomeNew = 0; // Loss cannot be set off
 
     const grossSlabIncomeNew = netSalaryNew + hpIncomeNew + p_pgbp + totalOtherSources;
@@ -128,19 +128,19 @@ export default function IncomeTaxCalculator() {
       // 0-4: 0, 4-8: 5%, 8-12: 10%, 12-16: 15%, 16-20: 20%, >20: 30%
       return 0; // Re-eval
     };
-    
+
     const calcNewSlab = (inc: number) => {
-        let tax = 0;
-        if(inc > 400000) tax += Math.min(inc - 400000, 400000) * 0.05; // 4-8
-        if(inc > 800000) tax += Math.min(inc - 800000, 400000) * 0.10; // 8-12
-        if(inc > 1200000) tax += Math.min(inc - 1200000, 400000) * 0.15; // 12-16
-        if(inc > 1600000) tax += Math.min(inc - 1600000, 400000) * 0.20; // 16-20
-        if(inc > 2000000) tax += (inc - 2000000) * 0.30; // > 20
-        return tax;
+      let tax = 0;
+      if (inc > 400000) tax += Math.min(inc - 400000, 400000) * 0.05; // 4-8
+      if (inc > 800000) tax += Math.min(inc - 800000, 400000) * 0.10; // 8-12
+      if (inc > 1200000) tax += Math.min(inc - 1200000, 400000) * 0.15; // 12-16
+      if (inc > 1600000) tax += Math.min(inc - 1600000, 400000) * 0.20; // 16-20
+      if (inc > 2000000) tax += (inc - 2000000) * 0.30; // > 20
+      return tax;
     }
 
     const newSlabTax = calcNewSlab(netSlabIncomeNew);
-    
+
     // Special Tax
     const taxLtcg112a = p_ltcg112a > 125000 ? (p_ltcg112a - 125000) * 0.125 : 0;
     const taxStcg111a = p_stcg111a * 0.20;
@@ -153,20 +153,20 @@ export default function IncomeTaxCalculator() {
     // Rebate 87A New Regime
     let newRebate = 0;
     if (totalIncomeNew <= 1200000) {
-        newRebate = Math.min(newGrossTax, 60000);
+      newRebate = Math.min(newGrossTax, 60000);
     } else {
-        // Marginal Relief on Rebate (income slightly above 12L)
-        // If income > 12L, tax payable shouldn't exceed income over 12L.
-        const incomeAbove12L = totalIncomeNew - 1200000;
-        // Total tax if income was exactly 12L
-        let dummyIncome = 1200000;
-        // Assuming special tax ratios stay same (simplified marginal logic for rebate)
-        const taxAt12L = 0; // Rebate covers it fully up to 60k. 
-        if (newGrossTax > incomeAbove12L) {
-            newRebate = newGrossTax - incomeAbove12L;
-        }
+      // Marginal Relief on Rebate (income slightly above 12L)
+      // If income > 12L, tax payable shouldn't exceed income over 12L.
+      const incomeAbove12L = totalIncomeNew - 1200000;
+      // Total tax if income was exactly 12L
+      let dummyIncome = 1200000;
+      // Assuming special tax ratios stay same (simplified marginal logic for rebate)
+      const taxAt12L = 0; // Rebate covers it fully up to 60k. 
+      if (newGrossTax > incomeAbove12L) {
+        newRebate = newGrossTax - incomeAbove12L;
+      }
     }
-    
+
     let taxAfterRebateNew = Math.max(0, newGrossTax - newRebate);
 
     // Surcharge New Regime
@@ -174,10 +174,10 @@ export default function IncomeTaxCalculator() {
     if (totalIncomeNew > 20000000) newSurchargeRate = 0.15; // Capped at 15% in New Regime
     else if (totalIncomeNew > 10000000) newSurchargeRate = 0.15;
     else if (totalIncomeNew > 5000000) newSurchargeRate = 0.10;
-    
+
     const newSurcharge = taxAfterRebateNew * newSurchargeRate;
     // (Ignoring detailed marginal relief on surcharge for simplicity of UI speed, but keeping core logic)
-    
+
     const newTaxBeforeCess = taxAfterRebateNew + newSurcharge;
     const newCess = newTaxBeforeCess * 0.04;
     const newTotalTax = Math.round(newTaxBeforeCess + newCess);
@@ -203,22 +203,22 @@ export default function IncomeTaxCalculator() {
     if (cat === 'ssr' && resStatus === 'resident') exemptionLimit = 500000;
 
     const calcOldSlab = (inc: number) => {
-        let tax = 0;
-        if (inc > exemptionLimit) {
-            const nextSlab = 500000;
-            tax += Math.min(Math.max(inc - exemptionLimit, 0), nextSlab - exemptionLimit) * 0.05;
-        }
-        if (inc > 500000) {
-            tax += Math.min(inc - 500000, 500000) * 0.20;
-        }
-        if (inc > 1000000) {
-            tax += (inc - 1000000) * 0.30;
-        }
-        return tax;
+      let tax = 0;
+      if (inc > exemptionLimit) {
+        const nextSlab = 500000;
+        tax += Math.min(Math.max(inc - exemptionLimit, 0), nextSlab - exemptionLimit) * 0.05;
+      }
+      if (inc > 500000) {
+        tax += Math.min(inc - 500000, 500000) * 0.20;
+      }
+      if (inc > 1000000) {
+        tax += (inc - 1000000) * 0.30;
+      }
+      return tax;
     }
 
     const oldSlabTax = calcOldSlab(netSlabIncomeOld);
-    
+
     // Special Tax is same
     const oldSpecialTax = taxLtcg112a + taxStcg111a + taxLtcgOther + taxLottery;
     let oldGrossTax = oldSlabTax + oldSpecialTax;
@@ -226,7 +226,7 @@ export default function IncomeTaxCalculator() {
     // Rebate 87A Old Regime (up to 5L)
     let oldRebate = 0;
     if (resStatus === 'resident' && totalIncomeOld <= 500000) {
-        oldRebate = Math.min(oldGrossTax, 12500);
+      oldRebate = Math.min(oldGrossTax, 12500);
     }
     let taxAfterRebateOld = Math.max(0, oldGrossTax - oldRebate);
 
@@ -240,9 +240,9 @@ export default function IncomeTaxCalculator() {
 
     // Max 15% surcharge on Special Incomes
     if (totalIncomeOld > 5000000) {
-        const specialSurchargeRate = Math.min(surchargeRate, 0.15);
-        const slabSurchargeRate = surchargeRate;
-        oldSurcharge = (oldSpecialTax * specialSurchargeRate) + (oldSlabTax * slabSurchargeRate); // simplified
+      const specialSurchargeRate = Math.min(surchargeRate, 0.15);
+      const slabSurchargeRate = surchargeRate;
+      oldSurcharge = (oldSpecialTax * specialSurchargeRate) + (oldSlabTax * slabSurchargeRate); // simplified
     }
 
     const oldTaxBeforeCess = taxAfterRebateOld + oldSurcharge;
@@ -250,31 +250,31 @@ export default function IncomeTaxCalculator() {
     const oldTotalTax = Math.round(oldTaxBeforeCess + oldCess);
 
     return {
-        new: {
-            grossSlab: grossSlabIncomeNew,
-            netSlab: netSlabIncomeNew,
-            totalIncome: totalIncomeNew,
-            slabTax: newSlabTax,
-            specialTax: newSpecialTax,
-            rebate: newRebate,
-            surcharge: newSurcharge,
-            cess: newCess,
-            totalTax: newTotalTax
-        },
-        old: {
-            grossSlab: grossSlabIncomeOld,
-            totalDed: totalDeductionsOld,
-            netSlab: netSlabIncomeOld,
-            totalIncome: totalIncomeOld,
-            slabTax: oldSlabTax,
-            specialTax: oldSpecialTax,
-            rebate: oldRebate,
-            surcharge: oldSurcharge,
-            cess: oldCess,
-            totalTax: oldTotalTax
-        },
-        difference: Math.abs(newTotalTax - oldTotalTax),
-        winner: newTotalTax < oldTotalTax ? 'new' : oldTotalTax < newTotalTax ? 'old' : 'tie'
+      new: {
+        grossSlab: grossSlabIncomeNew,
+        netSlab: netSlabIncomeNew,
+        totalIncome: totalIncomeNew,
+        slabTax: newSlabTax,
+        specialTax: newSpecialTax,
+        rebate: newRebate,
+        surcharge: newSurcharge,
+        cess: newCess,
+        totalTax: newTotalTax
+      },
+      old: {
+        grossSlab: grossSlabIncomeOld,
+        totalDed: totalDeductionsOld,
+        netSlab: netSlabIncomeOld,
+        totalIncome: totalIncomeOld,
+        slabTax: oldSlabTax,
+        specialTax: oldSpecialTax,
+        rebate: oldRebate,
+        surcharge: oldSurcharge,
+        cess: oldCess,
+        totalTax: oldTotalTax
+      },
+      difference: Math.abs(newTotalTax - oldTotalTax),
+      winner: newTotalTax < oldTotalTax ? 'new' : oldTotalTax < newTotalTax ? 'old' : 'tie'
     };
   }, [
     cat, resStatus,
@@ -310,10 +310,10 @@ export default function IncomeTaxCalculator() {
 
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8 items-start relative">
-        
+
         {/* LEFT PANEL - Form Inputs */}
         <div className="lg:col-span-7 xl:col-span-8 space-y-4">
-          
+
           {/* Profile Card */}
           <div className="p-6 rounded-3xl glass-card border border-slate-200">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -349,7 +349,7 @@ export default function IncomeTaxCalculator() {
                 <div className="p-4 rounded-xl bg-slate-200 border border-slate-300 text-sm text-slate-700">
                   <strong className="text-amber-400">Standard Deduction</strong> of ₹75,000 (New Regime) and ₹50,000 (Old Regime) is automatically applied.
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Gross Salary (incl. HRA, Bonus)</label>
@@ -380,7 +380,7 @@ export default function IncomeTaxCalculator() {
                     </div>
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Deductions allowed in Both Regimes (e.g. 80CCD(2), 80JJAA)</label>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Deductions allowed in Both Regimes (e.g.U/S 10 allowances, 80CCD(2), 80JJAA)</label>
                     <div className="relative">
                       <span className="absolute left-4 top-3 text-slate-500 font-medium">₹</span>
                       <input type="text" value={bothDed} onChange={handleInput(setBothDed)} placeholder="0" className="w-full pl-8 pr-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 text-sm focus:outline-none focus:border-amber-500 font-medium" />
@@ -598,7 +598,7 @@ export default function IncomeTaxCalculator() {
                   </div>
                   {computeTax.winner === 'old' && <div className="mt-2 text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2 py-1 rounded w-fit uppercase">Better Option</div>}
                 </div>
-                
+
                 {/* New Regime Summary */}
                 <div className={`p-4 rounded-2xl border ${computeTax.winner === 'new' ? 'bg-emerald-500/10 border-emerald-500/50' : 'bg-white border-slate-300'}`}>
                   <div className="text-xs font-bold text-slate-600 mb-1">NEW REGIME</div>
@@ -631,14 +631,14 @@ export default function IncomeTaxCalculator() {
                     <span className="block text-slate-800 font-bold">₹{formatINR(computeTax.old.netSlab)} <span className="text-[10px] text-slate-500 font-normal">(Old)</span></span>
                   </div>
                 </div>
-                { (computeTax.new.totalIncome - computeTax.new.netSlab > 0 || computeTax.old.totalIncome - computeTax.old.netSlab > 0) && (
-                <div className="flex justify-between items-center text-sm border-t border-slate-100 pt-2 mt-2">
-                  <span className="text-slate-600 font-medium">+ Special Income <span className="text-[10px] block font-normal">(Taxed at flat rates separately)</span></span>
-                  <div className="text-right">
-                    <span className="block text-slate-800 font-bold">₹{formatINR(computeTax.new.totalIncome - computeTax.new.netSlab)} <span className="text-[10px] text-slate-500 font-normal">(New)</span></span>
-                    <span className="block text-slate-800 font-bold">₹{formatINR(computeTax.old.totalIncome - computeTax.old.netSlab)} <span className="text-[10px] text-slate-500 font-normal">(Old)</span></span>
+                {(computeTax.new.totalIncome - computeTax.new.netSlab > 0 || computeTax.old.totalIncome - computeTax.old.netSlab > 0) && (
+                  <div className="flex justify-between items-center text-sm border-t border-slate-100 pt-2 mt-2">
+                    <span className="text-slate-600 font-medium">+ Special Income <span className="text-[10px] block font-normal">(Taxed at flat rates separately)</span></span>
+                    <div className="text-right">
+                      <span className="block text-slate-800 font-bold">₹{formatINR(computeTax.new.totalIncome - computeTax.new.netSlab)} <span className="text-[10px] text-slate-500 font-normal">(New)</span></span>
+                      <span className="block text-slate-800 font-bold">₹{formatINR(computeTax.old.totalIncome - computeTax.old.netSlab)} <span className="text-[10px] text-slate-500 font-normal">(Old)</span></span>
+                    </div>
                   </div>
-                </div>
                 )}
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-slate-600 font-medium">Slab Tax + Special Tax</span>
@@ -662,7 +662,7 @@ export default function IncomeTaxCalculator() {
                   </div>
                 </div>
               </div>
-              
+
               <button onClick={() => window.print()} className="mt-8 w-full py-3 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-sm transition-colors text-center">
                 Print Tax Summary
               </button>
