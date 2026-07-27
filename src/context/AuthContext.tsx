@@ -21,6 +21,8 @@ interface AuthContextType {
   setAuthModalMode: (mode: 'login' | 'signup' | 'forgot-password' | 'update-password') => void;
   isAdminModalOpen: boolean;
   setIsAdminModalOpen: (open: boolean) => void;
+  adminActiveTab: 'enquiries' | 'news' | 'reviews';
+  setAdminActiveTab: (tab: 'enquiries' | 'news' | 'reviews') => void;
   signIn: (email: string, pass: string) => Promise<{ error?: string }>;
   signUp: (email: string, pass: string, fullName: string, phone: string, role?: 'user' | 'admin') => Promise<{ error?: string }>;
   resetPassword: (email: string) => Promise<{ error?: string }>;
@@ -37,6 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<'login' | 'signup' | 'forgot-password' | 'update-password'>('login');
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
+  const [adminActiveTab, setAdminActiveTab] = useState<'enquiries' | 'news' | 'reviews'>('enquiries');
 
   useEffect(() => {
     let authListener: any = null;
@@ -313,6 +316,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setAuthModalMode,
         isAdminModalOpen,
         setIsAdminModalOpen,
+        adminActiveTab,
+        setAdminActiveTab,
         signIn,
         signUp,
         resetPassword,

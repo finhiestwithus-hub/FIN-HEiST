@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Shield, ArrowRight, Menu, X, PhoneCall, Mail, MapPin, UserCheck, User, LogOut, Lock } from 'lucide-react';
+import { Shield, ArrowRight, Menu, X, PhoneCall, Mail, MapPin, UserCheck, User, LogOut, Lock, FileText, Newspaper, Star } from 'lucide-react';
 import { COMPANY_INFO } from '../../data/mockData';
 import { useAuth } from '../../context/AuthContext';
 
@@ -10,7 +10,7 @@ interface NavbarProps {
 }
 
 export default function Navbar({ onOpenModal }: NavbarProps) {
- const { user, profile, setIsAuthModalOpen, setAuthModalMode, setIsAdminModalOpen, signOut } = useAuth();
+ const { user, profile, setIsAuthModalOpen, setAuthModalMode, signOut, adminActiveTab, setAdminActiveTab } = useAuth();
  const [isScrolled, setIsScrolled] = useState(false);
  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
  const [activeSection, setActiveSection] = useState('home');
@@ -73,15 +73,16 @@ export default function Navbar({ onOpenModal }: NavbarProps) {
     }
   };
 
- const navLinks = [
- { label: 'Home', href: '#home', id: 'home' },
- { label: 'Services', href: '#services', id: 'services' },
- { label: 'Why Us', href: '#why-us', id: 'why-us' },
- { label: 'Calculators', href: '#calculators', id: 'calculators' },
- { label: 'About Us', href: '#about', id: 'about' },
- { label: 'Leadership', href: '#leadership', id: 'leadership' },
- { label: 'Contact', href: '#contact', id: 'contact' },
- ];
+  const navLinks = [
+    { label: 'Home', href: '#home', id: 'home' },
+    { label: 'Services', href: '#services', id: 'services' },
+    { label: 'Why Us', href: '#why-us', id: 'why-us' },
+    { label: 'Calculators', href: '#calculators', id: 'calculators' },
+    { label: 'About Us', href: '#about', id: 'about' },
+    { label: 'Leadership', href: '#leadership', id: 'leadership' },
+    { label: 'Contact', href: '#contact', id: 'contact' },
+    { label: 'Reviews', href: '#reviews', id: 'reviews' },
+  ];
 
  return (
  <header className="fixed top-0 left-0 right-0 z-50 font-inter">
@@ -113,12 +114,12 @@ export default function Navbar({ onOpenModal }: NavbarProps) {
  </div>
 
  {/* Main Navigation */}
- <nav className={`w-full transition-all duration-300 ${
- isScrolled
- ? 'bg-white/90 backdrop-blur-xl shadow-lg shadow-slate-200/50 border-b border-slate-200/80 py-3'
- : 'bg-white/80 backdrop-blur-md border-b border-slate-200/60 py-4'
- }`}>
- <div className="max-w-[1760px] w-full mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 flex items-center justify-between">
+  <nav className={`w-full transition-all duration-300 ${
+    isScrolled
+      ? 'bg-white/90 backdrop-blur-xl shadow-lg shadow-slate-200/50 border-b border-slate-200/80 py-3'
+      : 'bg-white/80 backdrop-blur-md border-b border-slate-200/60 py-4'
+  }`}>
+    <div className="max-w-[1760px] w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 flex items-center justify-between">
  {/* Logo */}
  <a 
  href="#home" 
@@ -149,41 +150,69 @@ export default function Navbar({ onOpenModal }: NavbarProps) {
  </div>
  </a>
 
- {/* Desktop Navigation */}
- <div className="hidden xl:flex items-center gap-7">
- {navLinks.map((link) => {
- const isActive = activeSection === link.id;
- return (
- <a
- key={link.id}
- href={link.href}
- className={`text-sm font-semibold tracking-wide transition-all duration-200 relative py-1 ${
- isActive
- ? 'text-amber-600 font-extrabold'
- : 'text-slate-700 hover:text-amber-600'
- }`}
- >
- {link.label}
- {isActive && (
- <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-full animate-fadeIn" />
- )}
- </a>
- );
- })}
- </div>
+      {/* Desktop Navigation */}
+      <div className="hidden 2xl:flex items-center gap-4 min-[1350px]:gap-6 2xl:gap-8">
+        {profile?.role === 'admin' ? (
+          <>
+            <button
+              onClick={() => setAdminActiveTab('enquiries')}
+              className={`flex items-center gap-2 text-sm font-semibold tracking-wide transition-all duration-200 relative py-1 ${
+                adminActiveTab === 'enquiries' ? 'text-amber-600 font-extrabold' : 'text-slate-700 hover:text-amber-600'
+              }`}
+            >
+              <FileText className="w-4 h-4" /> Client Enquiries
+              {adminActiveTab === 'enquiries' && (
+                <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-full animate-fadeIn" />
+              )}
+            </button>
+            <button
+              onClick={() => setAdminActiveTab('news')}
+              className={`flex items-center gap-2 text-sm font-semibold tracking-wide transition-all duration-200 relative py-1 ${
+                adminActiveTab === 'news' ? 'text-amber-600 font-extrabold' : 'text-slate-700 hover:text-amber-600'
+              }`}
+            >
+              <Newspaper className="w-4 h-4" /> Manage Ticker
+              {adminActiveTab === 'news' && (
+                <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-full animate-fadeIn" />
+              )}
+            </button>
+            <button
+              onClick={() => setAdminActiveTab('reviews')}
+              className={`flex items-center gap-2 text-sm font-semibold tracking-wide transition-all duration-200 relative py-1 ${
+                adminActiveTab === 'reviews' ? 'text-amber-600 font-extrabold' : 'text-slate-700 hover:text-amber-600'
+              }`}
+            >
+              <Star className="w-4 h-4" /> Manage Reviews
+              {adminActiveTab === 'reviews' && (
+                <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-full animate-fadeIn" />
+              )}
+            </button>
+          </>
+        ) : (
+          navLinks.map((link) => {
+            const isActive = activeSection === link.id;
+            return (
+              <a
+                key={link.id}
+                href={link.href}
+                className={`text-sm font-semibold tracking-wide transition-all duration-200 relative py-1 ${
+                  isActive
+                    ? 'text-amber-600 font-extrabold'
+                    : 'text-slate-700 hover:text-amber-600'
+                }`}
+              >
+                {link.label}
+                {isActive && (
+                  <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-full animate-fadeIn" />
+                )}
+              </a>
+            );
+          })
+        )}
+      </div>
 
  {/* CTA & Auth & Mobile Toggle */}
  <div className="flex items-center gap-2.5 sm:gap-3">
- {profile?.role === 'admin' && (
- <button
- onClick={() => setIsAdminModalOpen(true)}
- className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-slate-950 text-amber-400 hover:bg-slate-900 border border-amber-500/50 font-poppins font-extrabold text-xs shadow-md animate-pulse"
- title="Open CA Admin Enquiries Feed"
- >
- <span>👑 CA Admin Feed</span>
- </button>
- )}
-
  {user ? (
  <div className="hidden sm:flex items-center gap-2 pl-2 border-l border-slate-200">
  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-300 text-xs font-bold text-slate-800">
@@ -202,16 +231,16 @@ export default function Navbar({ onOpenModal }: NavbarProps) {
 
  <button
  onClick={() => onOpenModal()}
- className="hidden md:flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-600 hover:to-yellow-600 text-slate-950 font-poppins font-extrabold text-sm shadow-lg shadow-amber-500/30 hover:shadow-amber-500/40 transition-all duration-300 transform hover:-translate-y-0.5 group border border-amber-300/40"
+ className="hidden md:flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-600 hover:to-yellow-600 text-slate-950 font-poppins font-extrabold text-sm shadow-lg shadow-amber-500/30 hover:shadow-amber-500/40 transition-all duration-300 transform hover:-translate-y-0.5 group border border-amber-300/40 whitespace-nowrap shrink-0"
  >
  <span>Book Consultation</span>
- <ArrowRight className="w-4 h-4 text-slate-950 group-hover:translate-x-1 transition-transform" />
+ <ArrowRight className="w-4 h-4 text-slate-950 group-hover:translate-x-1 transition-transform shrink-0" />
  </button>
 
- <button
- onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
- className="xl:hidden p-2 rounded-lg bg-slate-100 text-slate-700 hover:text-amber-600 hover:bg-amber-50 border border-slate-200 transition-colors"
- aria-label="Toggle menu"
+  <button
+  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+  className="2xl:hidden p-2 rounded-lg bg-slate-100 text-slate-700 hover:text-amber-600 hover:bg-amber-50 border border-slate-200 transition-colors"
+  aria-label="Toggle menu"
  >
  {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
  </button>
@@ -219,34 +248,54 @@ export default function Navbar({ onOpenModal }: NavbarProps) {
  </div>
  </nav>
 
- {/* Mobile Menu */}
- {mobileMenuOpen && (
- <div className="xl:hidden bg-white border-b border-slate-200 shadow-xl px-4 pt-4 pb-6">
+  {/* Mobile Menu */}
+  {mobileMenuOpen && (
+  <div className="2xl:hidden bg-white border-b border-slate-200 shadow-xl px-4 pt-4 pb-6">
  <div className="flex flex-col gap-2">
- {navLinks.map((link) => (
- <a
- key={link.id}
- href={link.href}
- onClick={() => setMobileMenuOpen(false)}
- className={`px-4 py-3 rounded-xl text-sm font-semibold transition-colors ${
- activeSection === link.id
- ? 'bg-amber-50 text-amber-700 border border-amber-200 font-bold'
- : 'text-slate-700 hover:bg-slate-50'
- }`}
- >
- {link.label}
- </a>
- ))}
+          {profile?.role === 'admin' ? (
+            <>
+              <button
+                onClick={() => { setAdminActiveTab('enquiries'); setMobileMenuOpen(false); }}
+                className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-colors text-left ${
+                  adminActiveTab === 'enquiries' ? 'bg-amber-50 text-amber-700 border border-amber-200 font-bold' : 'text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <FileText className="w-4 h-4" /> Client Enquiries
+              </button>
+              <button
+                onClick={() => { setAdminActiveTab('news'); setMobileMenuOpen(false); }}
+                className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-colors text-left ${
+                  adminActiveTab === 'news' ? 'bg-amber-50 text-amber-700 border border-amber-200 font-bold' : 'text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <Newspaper className="w-4 h-4" /> Manage Ticker
+              </button>
+              <button
+                onClick={() => { setAdminActiveTab('reviews'); setMobileMenuOpen(false); }}
+                className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-colors text-left ${
+                  adminActiveTab === 'reviews' ? 'bg-amber-50 text-amber-700 border border-amber-200 font-bold' : 'text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <Star className="w-4 h-4" /> Manage Reviews
+              </button>
+            </>
+          ) : (
+            navLinks.map((link) => (
+              <a
+                key={link.id}
+                href={link.href}
+                onClick={() => setMobileMenuOpen(false)}
+                className={`px-4 py-3 rounded-xl text-sm font-semibold transition-colors ${
+                  activeSection === link.id
+                    ? 'bg-amber-50 text-amber-700 border border-amber-200 font-bold'
+                    : 'text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                {link.label}
+              </a>
+            ))
+          )}
  <div className="pt-3 border-t border-slate-200 mt-1 flex flex-col gap-2">
- {profile?.role === 'admin' && (
- <button
- onClick={() => { setMobileMenuOpen(false); setIsAdminModalOpen(true); }}
- className="w-full py-3 rounded-xl bg-slate-950 text-amber-400 font-poppins font-extrabold text-sm flex items-center justify-center gap-2 border border-amber-500/50 shadow-sm"
- >
- <span>👑 Open CA Admin Enquiries Feed</span>
- </button>
- )}
-
  {user ? (
  <div className="flex flex-col gap-2 p-3 rounded-xl bg-slate-50 border border-slate-200">
  <div className="flex items-center gap-2 mb-2">

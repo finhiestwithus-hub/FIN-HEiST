@@ -33,9 +33,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${poppins.variable} ${inter.variable} h-full antialiased dark scroll-smooth`}
+      className={`${poppins.variable} ${inter.variable} h-full antialiased scroll-smooth`}
     >
-      <body className="min-h-full flex flex-col bg-[#050816] text-slate-100 font-inter selection:bg-blue-600 selection:text-white">
+      <body className="min-h-full flex flex-col font-inter selection:bg-blue-600 selection:text-white">
         <Providers>
           <VersionChecker />
           {children}

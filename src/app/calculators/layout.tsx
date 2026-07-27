@@ -16,7 +16,7 @@ export default function CalculatorsLayout({
   };
 
   return (
-    <main className="min-h-screen flex flex-col bg-[#050816] text-slate-100 relative selection:bg-blue-600 selection:text-white pt-24">
+    <main className="min-h-screen flex flex-col relative selection:bg-blue-600 selection:text-white pt-24">
       {/* 1. Sticky Glassmorphism Navbar */}
       <Navbar onOpenModal={handleOpenModal} />
 

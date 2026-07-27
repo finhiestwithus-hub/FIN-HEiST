@@ -17,11 +17,12 @@ export default function FloatingWidgets({ isModalOpen, setIsModalOpen, selectedS
  const { user, profile, setIsAuthModalOpen, setAuthModalMode } = useAuth();
  const [scrollProgress, setScrollProgress] = useState(0);
  const [showScrollTop, setShowScrollTop] = useState(false);
- const [isDarkMode, setIsDarkMode] = useState(true);
+ const [isDarkMode, setIsDarkMode] = useState(false);
  const [formData, setFormData] = useState({
  fullName: profile?.full_name || '',
  phone: profile?.phone || '',
  email: user?.email || '',
+ city: '',
  clientType: 'Business Owner',
  service: selectedService || 'Income Tax / GST Consultation',
  preferredTime: 'Immediate (Within 2 Hours)',
@@ -98,6 +99,15 @@ export default function FloatingWidgets({ isModalOpen, setIsModalOpen, selectedS
  setErrorMsg('Please enter a valid phone number (10 digits).');
  return;
  }
+ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+ if (!formData.email || !emailRegex.test(formData.email)) {
+ setErrorMsg('Please enter a valid email address.');
+ return;
+ }
+ if (!formData.city || formData.city.trim().length < 2) {
+ setErrorMsg('Please provide your city/location.');
+ return;
+ }
 
  setIsSubmitting(true);
 
@@ -106,11 +116,11 @@ export default function FloatingWidgets({ isModalOpen, setIsModalOpen, selectedS
  user_id: user?.id || null,
  client_name: formData.fullName,
  client_phone: formData.phone,
- client_email: formData.email || user?.email || '',
+ client_email: formData.email,
  client_category: formData.clientType,
  service_category: formData.service,
  preferred_time: formData.preferredTime,
- message_notes: formData.notes,
+ message_notes: formData.city ? `City: ${formData.city} Message: ${formData.notes}` : formData.notes,
  form_source: 'Header Booking Modal',
  status: 'New Inquiry' as const,
  created_at: new Date().toISOString()
@@ -129,11 +139,11 @@ export default function FloatingWidgets({ isModalOpen, setIsModalOpen, selectedS
  await supabase.from('enquiries').insert([{
  client_name: formData.fullName,
  client_phone: formData.phone,
- client_email: formData.email || user?.email || '',
+ client_email: formData.email,
  client_category: formData.clientType,
  service_category: formData.service,
  preferred_time: formData.preferredTime,
- message_notes: formData.notes,
+ message_notes: formData.city ? `City: ${formData.city} Message: ${formData.notes}` : formData.notes,
  form_source: 'Header Booking Modal',
  status: 'New Inquiry'
  }]);
@@ -158,6 +168,7 @@ export default function FloatingWidgets({ isModalOpen, setIsModalOpen, selectedS
  fullName: profile?.full_name || '',
  phone: profile?.phone || '',
  email: user?.email || '',
+ city: '',
  clientType: 'Business Owner',
  service: 'Income Tax / GST Consultation',
  preferredTime: 'Immediate (Within 2 Hours)',
@@ -305,6 +316,35 @@ export default function FloatingWidgets({ isModalOpen, setIsModalOpen, selectedS
  placeholder="+91 98765 43210"
  value={formData.phone}
  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+ className="w-full px-4 py-3 rounded-2xl bg-white border-2 border-slate-200 text-slate-900 dark:text-slate-900 placeholder-slate-400 font-medium text-sm focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 transition-all shadow-2xs" style={{ backgroundColor: "#ffffff", color: "#0f172a" }}
+ />
+ </div>
+ </div>
+ 
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+ <div>
+ <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-700 font-poppins mb-1.5">
+ Email Address *
+ </label>
+ <input
+ type="email"
+ required
+ placeholder="e.g. hello@example.com"
+ value={formData.email}
+ onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+ className="w-full px-4 py-3 rounded-2xl bg-white border-2 border-slate-200 text-slate-900 dark:text-slate-900 placeholder-slate-400 font-medium text-sm focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 transition-all shadow-2xs" style={{ backgroundColor: "#ffffff", color: "#0f172a" }}
+ />
+ </div>
+ <div>
+ <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-700 font-poppins mb-1.5">
+ City / Location *
+ </label>
+ <input
+ type="text"
+ required
+ placeholder="e.g. New Delhi"
+ value={formData.city}
+ onChange={(e) => setFormData({ ...formData, city: e.target.value })}
  className="w-full px-4 py-3 rounded-2xl bg-white border-2 border-slate-200 text-slate-900 dark:text-slate-900 placeholder-slate-400 font-medium text-sm focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 transition-all shadow-2xs" style={{ backgroundColor: "#ffffff", color: "#0f172a" }}
  />
  </div>

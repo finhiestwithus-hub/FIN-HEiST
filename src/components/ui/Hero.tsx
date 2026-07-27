@@ -8,7 +8,6 @@ import {
   Briefcase, Building2, Scale, FileText
 } from 'lucide-react';
 import { COMPANY_INFO } from '../../data/mockData';
-import NewsTicker from './NewsTicker';
 
 interface HeroProps {
   onOpenModal: (service?: string) => void;
@@ -77,11 +76,6 @@ export default function Hero({ onOpenModal }: HeroProps) {
 
       {/* Gold top accent strip */}
       <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 z-10 animate-gradient-shift" />
-
-      {/* Edge-to-edge News Ticker right below the fixed Navbar & TopBar */}
-      <div className="absolute top-[110px] sm:top-[118px] lg:top-[120px] left-0 right-0 z-40">
-        <NewsTicker />
-      </div>
 
       <div className="max-w-[1760px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 relative z-10 w-full mt-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-center w-full">

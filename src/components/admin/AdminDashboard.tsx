@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase, isSupabaseConfigured } from '../../lib/supabase';
-import { X, Shield, Phone, Mail, CheckCircle2, Clock, Filter, MessageCircle, RefreshCw, AlertCircle, FileText, Search, Plus, Trash2, Newspaper, Pencil, Check } from 'lucide-react';
-import { NewsItem } from '../../types';
+import { X, Shield, Phone, Mail, CheckCircle2, Clock, Filter, MessageCircle, RefreshCw, AlertCircle, FileText, Search, Plus, Trash2, Newspaper, Pencil, Check, Star, MessageSquare } from 'lucide-react';
+import { NewsItem, ReviewItem } from '../../types';
 
 export interface ClientEnquiry {
   id: string;
@@ -62,15 +62,19 @@ const DEMO_ENQUIRIES: ClientEnquiry[] = [
   }
 ];
 
-export default function AdminPortalModal() {
-  const { isAdminModalOpen, setIsAdminModalOpen, profile } = useAuth();
+export default function AdminDashboard() {
+  const { profile, adminActiveTab } = useAuth();
   const [enquiries, setEnquiries] = useState<ClientEnquiry[]>(DEMO_ENQUIRIES);
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedDays, setSelectedDays] = useState<string>('All Time');
+  const [currentPage, setCurrentPage] = useState<number>(1);
 
-  const [activeTab, setActiveTab] = useState<'enquiries' | 'news'>('enquiries');
+  const activeTab = adminActiveTab;
   const [news, setNews] = useState<NewsItem[]>([]);
+  const [adminReviews, setAdminReviews] = useState<ReviewItem[]>([]);
+  const [loadingReviews, setLoadingReviews] = useState(false);
   const [newHeadline, setNewHeadline] = useState('');
   const [newLink, setNewLink] = useState('');
   const [loadingNews, setLoadingNews] = useState(false);
@@ -81,11 +85,41 @@ export default function AdminPortalModal() {
   const [editLink, setEditLink] = useState('');
 
   useEffect(() => {
-    if (isAdminModalOpen) {
-      if (activeTab === 'enquiries') fetchEnquiries();
-      if (activeTab === 'news') fetchNews();
+    if (activeTab === 'enquiries') fetchEnquiries();
+    if (activeTab === 'news') fetchNews();
+    if (activeTab === 'reviews') fetchAdminReviews();
+  }, [activeTab]);
+
+  const fetchAdminReviews = async () => {
+    if (!isSupabaseConfigured()) {
+      const saved = localStorage.getItem('finheist_local_reviews');
+      if (saved) setAdminReviews(JSON.parse(saved));
+      return;
     }
-  }, [isAdminModalOpen, activeTab]);
+    setLoadingReviews(true);
+    try {
+      const { data } = await supabase.from('reviews').select('*').order('created_at', { ascending: false });
+      if (data) setAdminReviews(data);
+    } catch (e) {} finally { setLoadingReviews(false); }
+  };
+
+  const deleteAdminReview = async (id: string) => {
+    if (!window.confirm("Permanently delete this review?")) return;
+    const prev = [...adminReviews];
+    const updated = adminReviews.filter(r => r.id !== id);
+    setAdminReviews(updated);
+    if (!isSupabaseConfigured()) {
+      localStorage.setItem('finheist_local_reviews', JSON.stringify(updated));
+      return;
+    }
+    try {
+      const { error } = await supabase.from('reviews').delete().eq('id', id);
+      if (error) {
+        alert("Failed to delete review");
+        setAdminReviews(prev);
+      }
+    } catch (e) { setAdminReviews(prev); }
+  };
 
   const fetchEnquiries = async () => {
     if (!isSupabaseConfigured()) {
@@ -122,26 +156,80 @@ export default function AdminPortalModal() {
     }
   };
 
-  const updateStatus = async (id: string, newStatus: ClientEnquiry['status']) => {
-    // Optimistic UI update
-    const updated = enquiries.map(item => item.id === id ? { ...item, status: newStatus } : item);
-    setEnquiries(updated);
-
-    if (!isSupabaseConfigured()) {
-      const localOnly = updated.filter(u => u.id.length > 10);
-      localStorage.setItem('finheist_local_enquiries', JSON.stringify(localOnly));
-      return;
-    }
-
-    try {
-      await supabase
-        .from('enquiries')
-        .update({ status: newStatus })
-        .eq('id', id);
-    } catch (err) {
-      console.error('Failed status update:', err);
+  const handleEmailClientClick = (enq: ClientEnquiry) => {
+    if (!enq.client_email) return;
+    const subject = encodeURIComponent(`Follow up: Fin-Heist Inquiry for ${enq.service_category}`);
+    const body = encodeURIComponent(`Hi ${enq.client_name},\n\nThis is the CA Finalist Team from Fin-Heist regarding your inquiry for "${enq.service_category}".\n\nHow can we assist you today?\n\nBest Regards,\nFin-Heist Team`);
+    
+    // Check if user is on a mobile device
+    const isMobile = typeof window !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+      window.location.href = `mailto:${enq.client_email}?subject=${subject}&body=${body}`;
+    } else {
+      window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${enq.client_email}&su=${subject}&body=${body}`, '_blank');
     }
   };
+
+    const updateStatus = async (id: string, newStatus: ClientEnquiry['status']) => {
+        // Optimistic UI update
+        const previousEnquiries = [...enquiries];
+        const updated = enquiries.map(item => item.id === id ? { ...item, status: newStatus } : item);
+        setEnquiries(updated);
+
+        if (!isSupabaseConfigured()) {
+            const localOnly = updated.filter(u => u.id.length > 10);
+            localStorage.setItem('finheist_local_enquiries', JSON.stringify(localOnly));
+            return;
+        }
+
+        try {
+            const { error } = await supabase
+                .from('enquiries')
+                .update({ status: newStatus })
+                .eq('id', id);
+                
+            if (error) {
+                console.error('Supabase update error:', error);
+                alert(`Error updating status: ${error.message}`);
+                setEnquiries(previousEnquiries); // Revert UI
+            }
+        } catch (err) {
+            console.error('Failed status update:', err);
+            setEnquiries(previousEnquiries); // Revert UI
+        }
+    };
+
+    const deleteEnquiry = async (id: string) => {
+        if (!window.confirm("Are you sure you want to completely delete this enquiry? This action cannot be undone.")) return;
+
+        // Optimistic UI update
+        const previousEnquiries = [...enquiries];
+        const updated = enquiries.filter(item => item.id !== id);
+        setEnquiries(updated);
+
+        if (!isSupabaseConfigured()) {
+            const localOnly = updated.filter(u => u.id.length > 10);
+            localStorage.setItem('finheist_local_enquiries', JSON.stringify(localOnly));
+            return;
+        }
+
+        try {
+            const { error } = await supabase
+                .from('enquiries')
+                .delete()
+                .eq('id', id);
+                
+            if (error) {
+                console.error('Supabase delete error:', error);
+                alert(`Error deleting enquiry: ${error.message}`);
+                setEnquiries(previousEnquiries); // Revert UI
+            }
+        } catch (err) {
+            console.error('Failed delete:', err);
+            setEnquiries(previousEnquiries); // Revert UI
+        }
+    };
 
   const fetchNews = async () => {
     if (!isSupabaseConfigured()) return;
@@ -231,7 +319,6 @@ export default function AdminPortalModal() {
     }
   };
 
-  if (!isAdminModalOpen) return null;
 
   const filteredEnquiries = enquiries.filter(item => {
     const matchesCategory = selectedCategory === 'All' || item.service_category.toLowerCase().includes(selectedCategory.toLowerCase());
@@ -239,12 +326,29 @@ export default function AdminPortalModal() {
       item.client_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.client_phone.includes(searchQuery) ||
       (item.message_notes && item.message_notes.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesCategory && matchesSearch;
+      
+    let matchesDays = true;
+    if (selectedDays !== 'All Time') {
+      const enqDate = new Date(item.created_at);
+      const now = new Date();
+      const diffTime = Math.abs(now.getTime() - enqDate.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (selectedDays === 'Today') matchesDays = diffDays <= 1;
+      else if (selectedDays === 'Last 7 Days') matchesDays = diffDays <= 7;
+      else if (selectedDays === 'Last 30 Days') matchesDays = diffDays <= 30;
+    }
+
+    return matchesCategory && matchesSearch && matchesDays;
   });
 
+  const ITEMS_PER_PAGE = 10;
+  const totalPages = Math.ceil(filteredEnquiries.length / ITEMS_PER_PAGE);
+  const paginatedEnquiries = filteredEnquiries.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-6xl max-h-[92vh] flex flex-col bg-gradient-to-br from-white via-slate-50 to-[#FCFBFA] border-2 border-amber-500/50 rounded-3xl shadow-[0_25px_90px_-15px_rgba(245,158,11,0.35)] overflow-hidden">
+    <div className="w-full max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fadeIn">
+      <div className="relative w-full min-h-[75vh] flex flex-col bg-gradient-to-br from-white via-slate-50 to-[#FCFBFA] border border-slate-200 rounded-3xl shadow-xl overflow-hidden">
         
         {/* Top Gold Bar */}
         <div className="bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-6 sm:px-8 py-5 border-b border-amber-300 flex flex-wrap items-center justify-between gap-4 shadow-sm shrink-0">
@@ -254,7 +358,7 @@ export default function AdminPortalModal() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-xl sm:text-2xl font-extrabold font-poppins text-slate-950 tracking-tight">CA Finalists Admin Portal</h3>
+                <h3 className="text-xl sm:text-2xl font-extrabold font-poppins text-slate-950 tracking-tight">CA Finalists Admin Dashboard</h3>
                 <span className="px-3 py-0.5 rounded-full bg-slate-950 text-amber-400 text-xs font-mono font-extrabold border border-slate-800 shadow-2xs">
                   ROLE: {profile?.role?.toUpperCase() || 'ADMIN'}
                 </span>
@@ -274,59 +378,48 @@ export default function AdminPortalModal() {
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
               <span>Refresh Feed</span>
             </button>
-            <button
-              onClick={() => setIsAdminModalOpen(false)}
-              className="w-10 h-10 rounded-xl bg-slate-950/20 hover:bg-slate-950/30 text-slate-950 flex items-center justify-center transition-colors font-bold"
-            >
-              <X className="w-6 h-6 stroke-[2.5]" />
-            </button>
           </div>
-        </div>
-
-        {/* Tabs Switcher */}
-        <div className="flex border-b border-slate-200 bg-slate-100/40 p-2 gap-2 shrink-0">
-          <button
-            onClick={() => setActiveTab('enquiries')}
-            className={`flex-1 py-3 flex items-center justify-center gap-2 rounded-xl font-poppins font-extrabold text-xs sm:text-sm transition-all ${
-              activeTab === 'enquiries'
-                ? 'bg-white text-slate-950 shadow-sm border border-slate-200'
-                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/50'
-            }`}
-          >
-            <FileText className="w-4 h-4" /> Client Enquiries
-          </button>
-          <button
-            onClick={() => setActiveTab('news')}
-            className={`flex-1 py-3 flex items-center justify-center gap-2 rounded-xl font-poppins font-extrabold text-xs sm:text-sm transition-all ${
-              activeTab === 'news'
-                ? 'bg-white text-slate-950 shadow-sm border border-slate-200'
-                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/50'
-            }`}
-          >
-            <Newspaper className="w-4 h-4" /> Manage News Ticker
-          </button>
         </div>
 
         {activeTab === 'enquiries' && (
           <>
             {/* Filter & Search Bar */}
-            <div className="p-5 sm:px-8 border-b border-slate-200 bg-slate-100/70 flex flex-wrap items-center justify-between gap-4 shrink-0">
+            <div className="p-5 sm:px-8 border-b border-slate-200 bg-slate-100/70 flex flex-col xl:flex-row xl:items-start justify-between gap-4 shrink-0">
           
-          <div className="flex items-center flex-wrap gap-2">
-            <span className="text-xs font-bold uppercase text-slate-500 font-poppins mr-2">Filter Category:</span>
-            {['All', 'Income Tax', 'GST', 'Bank Loans', 'Accounting'].map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold font-poppins transition-all ${
-                  selectedCategory === cat
-                    ? 'bg-amber-500 text-slate-950 shadow-sm border border-amber-400'
-                    : 'bg-white text-slate-700 hover:bg-slate-200 border border-slate-300'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center flex-wrap gap-2">
+              <span className="text-xs font-bold uppercase text-slate-500 font-poppins mr-2 w-16">Service:</span>
+              {['All', 'Income Tax', 'GST', 'Bank Loans', 'Accounting', 'Business Registration', 'Financial Documentation'].map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => { setSelectedCategory(cat); setCurrentPage(1); }}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold font-poppins transition-all ${
+                    selectedCategory === cat
+                      ? 'bg-amber-500 text-slate-950 shadow-sm border border-amber-400'
+                      : 'bg-white text-slate-700 hover:bg-slate-200 border border-slate-300'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center flex-wrap gap-2">
+              <span className="text-xs font-bold uppercase text-slate-500 font-poppins mr-2 w-16">Time:</span>
+              {['All Time', 'Today', 'Last 7 Days', 'Last 30 Days'].map((dayFilter) => (
+                <button
+                  key={dayFilter}
+                  onClick={() => { setSelectedDays(dayFilter); setCurrentPage(1); }}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold font-poppins transition-all ${
+                    selectedDays === dayFilter
+                      ? 'bg-emerald-500 text-white shadow-sm border border-emerald-400'
+                      : 'bg-white text-slate-700 hover:bg-slate-200 border border-slate-300'
+                  }`}
+                >
+                  {dayFilter}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="relative w-full sm:w-72">
@@ -359,7 +452,7 @@ export default function AdminPortalModal() {
             </div>
           ) : (
             <div className="space-y-4">
-              {filteredEnquiries.map((enq) => {
+              {paginatedEnquiries.map((enq) => {
                 const isResolved = enq.status === 'Resolved';
                 const statusColors: Record<string, string> = {
                   'New Inquiry': 'bg-amber-100 text-amber-900 border-amber-400',
@@ -402,6 +495,30 @@ export default function AdminPortalModal() {
                           <option value="Resolved">Mark: Resolved / Closed</option>
                         </select>
 
+                        {/* Delete Button */}
+                        <button
+                          onClick={() => deleteEnquiry(enq.id)}
+                          title="Delete Enquiry"
+                          className="px-3 py-2 rounded-xl font-bold flex items-center justify-center transition-transform transform hover:-translate-y-0.5 bg-red-100 hover:bg-red-200 text-red-600 shadow-sm"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+
+                        {/* Email Connect Button */}
+                        <button
+                          onClick={() => handleEmailClientClick(enq)}
+                          disabled={!enq.client_email}
+                          title={!enq.client_email ? "No email provided by user" : "Send email"}
+                          className={`px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-2 shadow-sm transition-transform transform ${
+                            enq.client_email 
+                              ? "bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-slate-950 hover:-translate-y-0.5" 
+                              : "bg-slate-200 text-slate-400 cursor-not-allowed"
+                          }`}
+                        >
+                          <Mail className="w-4 h-4" />
+                          <span className="hidden sm:inline">Connect Email</span>
+                        </button>
+
                         {/* Instant WhatsApp Quick Connect Button */}
                         <a
                           href={`https://wa.me/${enq.client_phone.replace(/\s+/g, '').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
@@ -412,7 +529,7 @@ export default function AdminPortalModal() {
                           className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-xs flex items-center gap-2 shadow-sm transition-transform transform hover:-translate-y-0.5"
                         >
                           <MessageCircle className="w-4 h-4" />
-                          <span>Connect WhatsApp</span>
+                          <span className="hidden sm:inline">Connect WhatsApp</span>
                         </a>
                       </div>
                     </div>
@@ -442,6 +559,33 @@ export default function AdminPortalModal() {
                   </div>
                 );
               })}
+              
+              {totalPages > 1 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-200/80">
+                  <span className="text-xs font-bold text-slate-500">
+                    Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, filteredEnquiries.length)} of {filteredEnquiries.length} entries
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      className="px-4 py-2 rounded-xl bg-white border border-slate-300 text-slate-700 font-bold text-xs disabled:opacity-50 hover:bg-slate-50 transition-colors"
+                    >
+                      Previous
+                    </button>
+                    <span className="text-xs font-extrabold text-slate-900 bg-slate-200 px-3 py-1.5 rounded-lg">
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <button 
+                      disabled={currentPage === totalPages}
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      className="px-4 py-2 rounded-xl bg-white border border-slate-300 text-slate-700 font-bold text-xs disabled:opacity-50 hover:bg-slate-50 transition-colors"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -565,6 +709,40 @@ export default function AdminPortalModal() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {activeTab === 'reviews' && (
+          <div className="p-6 sm:p-8 overflow-y-auto flex-1 bg-slate-50 space-y-4">
+            {loadingReviews ? (
+              <div className="py-20 text-center"><div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto" /></div>
+            ) : adminReviews.length === 0 ? (
+              <div className="text-center py-8 text-slate-500 text-sm font-medium">No reviews found.</div>
+            ) : (
+              adminReviews.map(review => (
+                <div key={review.id} className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm relative group">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h4 className="font-bold text-slate-900">{review.client_name}</h4>
+                      <div className="flex items-center gap-1 mt-1">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className={`w-3.5 h-3.5 ${i < review.rating ? 'fill-amber-400 text-amber-400' : 'fill-slate-200 text-slate-200'}`} />
+                        ))}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => deleteAdminReview(review.id)}
+                      className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                      title="Delete Review"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <p className="text-slate-600 text-sm italic">"{review.review_text}"</p>
+                  <div className="mt-4 text-xs font-bold text-slate-400">{new Date(review.created_at).toLocaleString()}</div>
+                </div>
+              ))
+            )}
           </div>
         )}
 

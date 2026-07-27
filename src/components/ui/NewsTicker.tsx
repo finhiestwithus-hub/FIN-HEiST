@@ -28,11 +28,13 @@ export default function NewsTicker() {
 
  if (news.length === 0) return null;
 
- // Duplicate items enough times to fill an ultra-wide screen so one block is wider than the screen
- const baseItems = [...news, ...news, ...news, ...news, ...news, ...news];
+  // Duplicate items enough times to ensure it covers even the widest 8K displays
+  // and keeps a constant scroll speed regardless of how many news items there are.
+  const baseItems = Array(30).fill(news).flat();
+  const animationDuration = `${baseItems.length * 4}s`; // 4 seconds per item for constant speed
 
  return (
- <div className="w-full bg-slate-950/95 backdrop-blur-xl text-white overflow-hidden border-y border-amber-500/30 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.5)] relative z-50 flex items-stretch h-14 sm:h-16">
+ <div className="w-full bg-slate-950/95 backdrop-blur-xl text-white overflow-hidden border-y border-amber-500/30 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.5)] relative z-40 flex items-stretch h-14 sm:h-16">
  
  {/* Premium Badge */}
  <div className="hidden sm:flex px-10 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 text-slate-950 font-black text-[15px] uppercase tracking-[0.2em] shrink-0 z-10 shadow-[8px_0_20px_-5px_rgba(245,158,11,0.3)] relative items-center justify-center border-r border-amber-400/50">
@@ -56,9 +58,9 @@ export default function NewsTicker() {
  0% { transform: translateX(0); }
  100% { transform: translateX(-100%); }
  }
- .animate-marquee-block {
- animation: slideMarquee 40s linear infinite;
- }
+  .animate-marquee-block {
+    animation: slideMarquee var(--marquee-duration, 40s) linear infinite;
+  }
  .marquee-container:hover .animate-marquee-block {
  animation-play-state: paused;
  }
@@ -67,11 +69,14 @@ export default function NewsTicker() {
  mask-image: linear-gradient(to right, transparent, black 3%, black 97%, transparent);
  }
 `}} />
- <div className="flex w-max marquee-container items-center h-full">
- {[0, 1].map((blockIdx) => (
- <div key={blockIdx} className="flex items-center gap-12 pr-12 animate-marquee-block shrink-0 h-full">
- {baseItems.map((item, i) => (
- <div key={`${item.id}-${i}`} className="flex items-center shrink-0">
+ <div 
+    className="flex w-max marquee-container items-center h-full" 
+    style={{ '--marquee-duration': animationDuration } as React.CSSProperties}
+  >
+  {[0, 1].map((blockIdx) => (
+  <div key={blockIdx} className="flex items-center gap-12 pr-12 animate-marquee-block shrink-0 h-full">
+  {baseItems.map((item, i) => (
+  <div key={`${item.id}-${blockIdx}-${i}`} className="flex items-center shrink-0">
  {item.link ? (
  <a href={item.link} target="_blank" rel="noreferrer" className="text-[14px] sm:text-[19px] font-semibold font-montserrat text-slate-100 hover:text-amber-400 transition-all duration-300 hover:scale-[1.01] flex items-center gap-3 sm:gap-4 group">
  <span className="flex h-2 w-2 sm:h-2.5 sm:w-2.5 relative shrink-0">

@@ -10,6 +10,15 @@ export interface ServiceItem {
   popular?: boolean;
 }
 
+export interface ReviewItem {
+  id: string;
+  client_name: string;
+  review_text: string;
+  rating: number;
+  status: 'Approved' | 'Hidden';
+  created_at: string;
+}
+
 export interface FeaturedService {
   id: string;
   title: string;
