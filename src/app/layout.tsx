@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Poppins, Inter } from "next/font/google";
 import "./globals.css";
+import "./globals.css";
 import Providers from "@/components/Providers";
+import VersionChecker from "@/components/VersionChecker";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -35,6 +37,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-[#050816] text-slate-100 font-inter selection:bg-blue-600 selection:text-white">
         <Providers>
+          <VersionChecker />
           {children}
         </Providers>
       </body>
