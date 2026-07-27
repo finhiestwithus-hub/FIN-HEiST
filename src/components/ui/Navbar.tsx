@@ -58,6 +58,21 @@ export default function Navbar({ onOpenModal }: NavbarProps) {
  return () => window.removeEventListener('scroll', handleScroll);
  }, []);
 
+  const handleEmailClick = (e: React.MouseEvent<HTMLAnchorElement>, email: string) => {
+    e.preventDefault();
+    const subject = encodeURIComponent("Consultation Inquiry");
+    const body = encodeURIComponent("Hi FIN-HEIST Team,\n\nI would like to schedule a consultation regarding my financial and compliance requirements.\n\nThanks,");
+    
+    // Check if user is on a mobile device
+    const isMobile = typeof window !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+      window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+    } else {
+      window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${email}&su=${subject}&body=${body}`, '_blank');
+    }
+  };
+
  const navLinks = [
  { label: 'Home', href: '#home', id: 'home' },
  { label: 'Services', href: '#services', id: 'services' },
@@ -77,10 +92,10 @@ export default function Navbar({ onOpenModal }: NavbarProps) {
  <PhoneCall className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
  <span>{COMPANY_INFO.phone}</span>
  </a>
- <a href={`mailto:${COMPANY_INFO.email}`} className="hidden sm:flex items-center gap-1.5 hover:text-amber-400 transition-colors">
- <Mail className="w-3.5 h-3.5 text-amber-400" />
- <span>{COMPANY_INFO.email}</span>
- </a>
+          <a href="#" onClick={(e) => handleEmailClick(e, COMPANY_INFO.email)} className="hidden sm:flex items-center gap-1.5 hover:text-amber-400 transition-colors">
+            <Mail className="w-3.5 h-3.5 text-amber-400" />
+            <span>{COMPANY_INFO.email}</span>
+          </a>
  </div>
  <div className="flex items-center gap-4">
  <div className="hidden lg:flex items-center gap-1.5">

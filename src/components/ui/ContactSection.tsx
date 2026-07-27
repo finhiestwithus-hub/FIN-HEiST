@@ -26,6 +26,20 @@ export default function ContactSection({ onOpenModal }: ContactSectionProps) {
     const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
     const [errorMessage, setErrorMessage] = useState('');
 
+    const handleEmailClick = (e: React.MouseEvent<HTMLAnchorElement>, email: string) => {
+        e.preventDefault();
+        const subject = encodeURIComponent("Consultation Inquiry");
+        const body = encodeURIComponent("Hi FIN-HEIST Team,\n\nI would like to schedule a consultation regarding my financial and compliance requirements.\n\nThanks,");
+        
+        const isMobile = typeof window !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        if (isMobile) {
+            window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+        } else {
+            window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${email}&su=${subject}&body=${body}`, '_blank');
+        }
+    };
+
     const validateAndSubmit = (e: React.FormEvent, actionType: 'submit' | 'book' | 'whatsapp') => {
         e.preventDefault();
         setErrorMessage('');
@@ -41,8 +55,13 @@ export default function ContactSection({ onOpenModal }: ContactSectionProps) {
             return;
         }
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (formData.email && !emailRegex.test(formData.email)) {
+        if (!formData.email || !emailRegex.test(formData.email)) {
             setErrorMessage('Please enter a valid Email address.');
+            return;
+        }
+
+        if (!formData.city || formData.city.trim().length < 2) {
+            setErrorMessage('Please provide your City / Location.');
             return;
         }
 
@@ -138,7 +157,8 @@ export default function ContactSection({ onOpenModal }: ContactSectionProps) {
                             </a>
 
                             <a
-                                href={`mailto:${COMPANY_INFO.email}`}
+                                href="#"
+                                onClick={(e) => handleEmailClick(e, COMPANY_INFO.email)}
                                 className="flex items-center gap-4 p-5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 hover:border-emerald-400 hover:bg-emerald-500/20 transition-all group shadow-sm"
                             >
                                 <div className="w-12 h-12 rounded-xl bg-emerald-600 text-white flex items-center justify-center group-hover:scale-110 transition-transform shrink-0 shadow-md">
@@ -248,10 +268,11 @@ export default function ContactSection({ onOpenModal }: ContactSectionProps) {
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
                                                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                                                    Email Address
+                                                    Email Address *
                                                 </label>
                                                 <input
                                                     type="email"
+                                                    required
                                                     placeholder="you@example.com"
                                                     value={formData.email}
                                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -260,10 +281,11 @@ export default function ContactSection({ onOpenModal }: ContactSectionProps) {
                                             </div>
                                             <div>
                                                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                                                    City / Location
+                                                    City / Location *
                                                 </label>
                                                 <input
                                                     type="text"
+                                                    required
                                                     placeholder="e.g. Dehradun / Mumbai"
                                                     value={formData.city}
                                                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}

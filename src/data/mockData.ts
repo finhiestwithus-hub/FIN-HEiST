@@ -639,7 +639,7 @@ export const COMPANY_INFO = {
   name: 'Fin-Heist',
   tagline: 'Tax, GST & Compliance Made Simple',
   phone: '+91 9027661642',
-  email: 'finhiestwithus@gmail.com',
+  email: 'Finheistwithus@gmail.com',
   instagram: '@finheistwithus',
   instagramUrl: 'https://instagram.com/finheistwithus',
   whatsappNumber: '919027661642',
