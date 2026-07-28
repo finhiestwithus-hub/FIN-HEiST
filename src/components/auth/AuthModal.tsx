@@ -138,9 +138,9 @@ export default function AuthModal() {
                 <div className="relative">
                   <Mail className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
                   <input
-                    type="email"
+                    type="text"
                     required
-                    placeholder="name@company.com or admin@fin-heist.com"
+                    placeholder="name@company.com or Admin@finheist"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 rounded-2xl bg-white border-2 border-slate-200 text-slate-900 placeholder-slate-400 font-medium text-sm focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 transition-all shadow-2xs"

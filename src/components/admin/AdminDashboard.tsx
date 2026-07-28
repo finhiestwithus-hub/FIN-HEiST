@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase, isSupabaseConfigured } from '../../lib/supabase';
-import { X, Shield, Phone, Mail, CheckCircle2, Clock, Filter, MessageCircle, RefreshCw, AlertCircle, FileText, Search, Plus, Trash2, Newspaper, Pencil, Check, Star, MessageSquare } from 'lucide-react';
+import { X, Shield, Phone, Mail, CheckCircle2, Clock, Filter, MessageCircle, RefreshCw, AlertCircle, FileText, Search, Plus, Trash2, Newspaper, Pencil, Check, Star, MessageSquare, Calendar } from 'lucide-react';
 import { NewsItem, ReviewItem } from '../../types';
 
 export interface ClientEnquiry {
@@ -72,6 +72,7 @@ export default function AdminDashboard() {
   const [currentPage, setCurrentPage] = useState<number>(1);
 
   const activeTab = adminActiveTab;
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [news, setNews] = useState<NewsItem[]>([]);
   const [adminReviews, setAdminReviews] = useState<ReviewItem[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
@@ -85,9 +86,21 @@ export default function AdminDashboard() {
   const [editLink, setEditLink] = useState('');
 
   useEffect(() => {
-    if (activeTab === 'enquiries') fetchEnquiries();
+    let intervalId: NodeJS.Timeout;
+
+    if (activeTab === 'enquiries') {
+      fetchEnquiries();
+      // Auto-refresh enquiries silently every 15 seconds
+      intervalId = setInterval(() => {
+        silentFetchEnquiries();
+      }, 15000);
+    }
     if (activeTab === 'news') fetchNews();
     if (activeTab === 'reviews') fetchAdminReviews();
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
   }, [activeTab]);
 
   const fetchAdminReviews = async () => {
@@ -154,6 +167,31 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const silentFetchEnquiries = async () => {
+    if (!isSupabaseConfigured()) return;
+    try {
+      const { data, error } = await supabase
+        .from('enquiries')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error || !data) return;
+
+      const newData = data as ClientEnquiry[];
+      
+      setEnquiries(prev => {
+        // Find if there are any new enquiries not currently in state
+        const newIds = newData.filter(n => !prev.some(p => p.id === n.id));
+        if (newIds.length > 0) {
+          setToastMsg(`🔔 New Enquiry Received!`);
+          setTimeout(() => setToastMsg(null), 5000);
+          return newData; // Update state with the fresh data
+        }
+        return prev; // Prevent unnecessary re-renders if nothing changed
+      });
+    } catch (err) {}
   };
 
   const handleEmailClientClick = (enq: ClientEnquiry) => {
@@ -480,6 +518,10 @@ export default function AdminDashboard() {
                         <p className="text-xs font-semibold text-amber-800 mt-1">
                           Service Required: <strong className="text-slate-900 font-poppins">{enq.service_category}</strong>
                         </p>
+                        <p className="text-[11px] font-medium text-slate-500 mt-1.5 flex items-center gap-1.5">
+                          <Calendar className="w-3.5 h-3.5" />
+                          Submitted on: {new Date(enq.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })}
+                        </p>
                       </div>
 
                       <div className="flex items-center gap-2.5 ml-auto">
@@ -754,6 +796,15 @@ export default function AdminDashboard() {
             Supabase RLS Protected Admin Enquiries Stream
           </span>
         </div>
+
+        {/* Toast Notification */}
+        {toastMsg && (
+          <div className="fixed bottom-6 right-6 z-50 animate-bounce">
+            <div className="bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 px-6 py-4 rounded-xl shadow-2xl shadow-amber-500/40 font-bold flex items-center gap-3 border-2 border-amber-200">
+              {toastMsg}
+            </div>
+          </div>
+        )}
 
       </div>
     </div>
