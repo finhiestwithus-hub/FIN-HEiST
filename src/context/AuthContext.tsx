@@ -141,7 +141,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // 1. Check if login matches Env Admin Credentials exactly
     if (email.trim().toLowerCase() === adminEmail) {
-      if (pass !== adminPass && pass !== 'AdminPassword2026@' && pass !== 'YourSecureAdminPassword123@') {
+      if (pass !== adminPass) {
         return { error: '⚠️ Invalid Admin Password. Please check NEXT_PUBLIC_ADMIN_PASSWORD inside .env.local.' };
       }
       
