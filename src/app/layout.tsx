@@ -20,9 +20,40 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Fin-Heist | Tax, GST & Compliance Made Simple",
-  description: "Professional assistance for Income Tax, GST, Accounting, Business Registration, Financial Documentation and Bank Loan Project Reports across India. Led by CA Finalists.",
-  keywords: ["Fin-Heist", "CA in India", "Income Tax Filing", "GST Return", "Accounting Tally", "Project Reports", "CMA Data", "DSCR", "MSME Loan", "Business Compliance", "Dehradun CA"],
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.finheistwithus.in.net'),
+  title: {
+    default: "Fin-Heist | Top CA, Tax, GST & Financial Consultants in India",
+    template: "%s | Fin-Heist"
+  },
+  description: "Fin-Heist offers premium CA services, Income Tax Filing, GST Returns, Company Registration, Accounting, CMA Data & Bank Loan Project Reports across India.",
+  keywords: ["Fin-Heist", "Fin Heist", "CA in India", "Income Tax Filing", "GST Return", "Accounting Tally", "Project Reports", "CMA Data", "DSCR", "MSME Loan", "Business Compliance", "Dehradun CA", "Gurgaon CA"],
+  authors: [{ name: "Fin-Heist Team" }],
+  creator: "Fin-Heist",
+  publisher: "Fin-Heist",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    url: "https://www.finheistwithus.in.net",
+    title: "Fin-Heist | Top CA, Tax, GST & Financial Consultants",
+    description: "Expert assistance for Income Tax, GST, Accounting, Business Registration, and Financial Documentation led by CA Finalists.",
+    siteName: "Fin-Heist",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Fin-Heist | Financial & Tax Consultants",
+    description: "Expert assistance for Income Tax, GST, Accounting, Business Registration, and Financial Documentation.",
+  },
 };
 
 export default function RootLayout({
