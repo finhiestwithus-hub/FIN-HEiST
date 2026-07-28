@@ -119,15 +119,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('id', userId)
         .single();
 
+      const adminEmail = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'admin@fin-heist.com').toLowerCase();
+
       if (data) {
-        setProfile(data as UserProfile);
+        // Strict enforcement: even if DB says admin, if it doesn't match ENV exactly, downgrade to user
+        const strictRole = (data.role === 'admin' && email.toLowerCase() !== adminEmail) ? 'user' : data.role;
+        setProfile({ ...data, role: strictRole } as UserProfile);
       } else {
         // If profile trigger delayed or missing, create default profile in state
         setProfile({
           id: userId,
           full_name: email.split('@')[0] || 'Client Profile',
           email: email,
-          role: email.toLowerCase().includes('admin') ? 'admin' : 'user'
+          role: email.toLowerCase() === adminEmail ? 'admin' : 'user'
         });
       }
     } catch (err) {
@@ -139,10 +143,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const adminEmail = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'admin@fin-heist.com').toLowerCase();
     const adminPass = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'AdminPassword2026@';
 
-    // 1. Check if login matches Env Admin Credentials exactly
-    if (email.trim().toLowerCase() === adminEmail) {
+    // 1. Strict Admin Login Check
+    // If they type an email containing "admin" OR it matches the env email exactly
+    const isAttemptingAdmin = email.trim().toLowerCase() === adminEmail || email.toLowerCase().includes('admin');
+
+    if (isAttemptingAdmin) {
+      if (email.trim().toLowerCase() !== adminEmail) {
+        return { error: '⚠️ Invalid Admin Email' };
+      }
       if (pass !== adminPass) {
-        return { error: '⚠️ Invalid Admin Password. Please check NEXT_PUBLIC_ADMIN_PASSWORD inside .env.local.' };
+        return { error: '⚠️ Invalid Admin Password' };
       }
       
       if (isSupabaseConfigured()) {
