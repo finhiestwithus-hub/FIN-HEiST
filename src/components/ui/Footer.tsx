@@ -42,6 +42,9 @@ export default function Footer({ onOpenModal }: FooterProps) {
  <span className="block text-[10px] text-amber-300 font-semibold uppercase tracking-widest mt-0.5">
  Taxation • Compliance • Growth
  </span>
+ <span className="block text-[9px] text-amber-300 font-semibold uppercase tracking-widest mt-0.5 opacity-90">
+ GSTIN: 05HFLPK7898D1ZT
+ </span>
  </div>
  </div>
 
@@ -159,10 +162,12 @@ export default function Footer({ onOpenModal }: FooterProps) {
  </div>
 
  {/* Bottom Bar */}
- <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 font-inter gap-4">
- <div className="flex items-center gap-2">
+ <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 font-inter gap-4 text-center sm:text-left">
+ <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
  <span>© {new Date().getFullYear()} Fin-Heist. All Rights Reserved.</span>
- <span className="text-slate-700">•</span>
+ <span className="text-slate-700 hidden sm:inline">•</span>
+ <span className="font-medium text-slate-400">GSTIN: 05HFLPK7898D1ZT</span>
+ <span className="text-slate-700 hidden sm:inline">•</span>
  <span>Led by CA Finalists Partnership</span>
  </div>
 
